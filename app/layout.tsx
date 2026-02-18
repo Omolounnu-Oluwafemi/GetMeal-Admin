@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="flex min-h-screen bg-[#F9FAFB]">
+        <div className="flex min-h-screen bg-[#fafafa]">
           {/* Sidebar */}
           <Sidebar />
 
@@ -26,7 +26,7 @@ export default function RootLayout({
             <Header />
 
             {/* Page Content */}
-            <main className="p-8 pt-6">{children}</main>
+            <main className="p-4 pt-6">{children}</main>
           </div>
         </div>
       </body>

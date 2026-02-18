@@ -57,7 +57,9 @@ export {
   MapPin,             // Location/address
   Globe,              // Website/global
   Building,           // Organization
-  Shield,             // Admin/security
+  Shield,
+  Ban,
+  Star,
 } from 'lucide-react';
 
 // Order & Commerce Icons (10)
