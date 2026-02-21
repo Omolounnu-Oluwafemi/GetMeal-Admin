@@ -2,7 +2,7 @@
 
 import { Check } from "@/lib/icons";
 
-interface CustomersFilterPanelProps {
+interface PaymentsFilterPanelProps {
   selectedStatus: string[];
   selectedCities: string[];
   sortBy: string;
@@ -21,7 +21,7 @@ const sortOptions = [
   { value: "last-active", label: "Last Active" },
 ];
 
-export default function CustomersFilterPanel({
+export default function PaymentsFilterPanel({
   selectedStatus,
   selectedCities,
   sortBy,
@@ -29,7 +29,7 @@ export default function CustomersFilterPanel({
   onCitiesChange,
   onSortChange,
   onClear,
-}: CustomersFilterPanelProps) {
+}: PaymentsFilterPanelProps) {
   const handleStatusToggle = (status: string) => {
     if (selectedStatus.includes(status)) {
       onStatusChange(selectedStatus.filter((s) => s !== status));

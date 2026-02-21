@@ -1,89 +1,141 @@
-import StatCard from "@/components/StatCard";
-import OrdersChart from "@/components/OrdersChart";
-import SystemAlerts from "@/components/SystemAlerts";
-import OrdersTable from "@/components/OrderStable";
+"use client";
 
-export default function DashboardPage() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, ArrowRight, Mail, Lock } from "@/lib/icons";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Handle login logic here
+    console.log("Login:", { email, password, rememberMe });
+
+    // Redirect to dashboard on success
+    router.push("/dashboard");
+
+    setLoading(false);
+  };
+
   return (
-    <div className="space-y-6 mt-[-4] ">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 ">
-        <StatCard
-          label="Active Cooks"
-          value="45 / 156"
-          subtitle="Total"
-          trend={{
-            value: 5.8,
-            isPositive: true,
-            comparedTo: "vs yesterday",
-          }}
-        />
-
-        <StatCard
-          label="Total Orders Today"
-          value="360"
-          trend={{
-            value: 8.2,
-            isPositive: true,
-            comparedTo: "vs yesterday",
-          }}
-        />
-
-        <StatCard
-          label="Amount Made Today"
-          value="₦33.0k"
-          trend={{
-            value: 12.9,
-            isPositive: true,
-            comparedTo: "vs yesterday",
-          }}
-        />
-
-        <StatCard
-          label="Cancellations Today"
-          value="8"
-          trend={{
-            value: 12.5,
-            isPositive: false,
-            comparedTo: "vs yesterday",
-          }}
-        />
-
-        <StatCard
-          label="Refunds Today"
-          value="₦34,500"
-          trend={{
-            value: 5.8,
-            isPositive: false,
-            comparedTo: "vs yesterday",
-          }}
-        />
-
-        <StatCard
-          label="GMV"
-          value="₦2.1M"
-          trend={{
-            value: 18.3,
-            isPositive: true,
-            comparedTo: "vs yesterday",
-          }}
-        />
-      </div>
-
-      {/* Charts and Alerts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Orders Chart - Takes 2 columns */}
-        <div className="lg:col-span-2">
-          <OrdersChart />
-        </div>
-
-        {/* System Alerts - Takes 1 column */}
-        <div className="lg:col-span-1">
-          <SystemAlerts />
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      {/* Logo */}
+      <div className="mb-8">
+        <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-[#219e02] rounded-full" />
         </div>
       </div>
 
-      <OrdersTable />
+      {/* Welcome Text */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+        <p className="text-gray-600">
+          Sign in to access the Getameal Admin Dashboard
+        </p>
+      </div>
+
+      {/* Login Form */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="kingsleyezechukwu2018@gmail.com"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                required
+              />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••"
+                className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                required
+              />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <Eye className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-[#219e02] focus:ring-[#219e02] border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700">Remember me</span>
+            </label>
+            <a
+              href="/forgot-password"
+              className="text-sm text-[#219e02] hover:underline font-medium"
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#219e02] text-white rounded-lg font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                Sign In
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Footer */}
+      <p className="mt-8 text-sm text-gray-500">
+        © 2026 Getameal. All rights reserved.
+      </p>
     </div>
   );
 }

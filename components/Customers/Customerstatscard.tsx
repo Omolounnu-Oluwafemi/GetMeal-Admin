@@ -15,12 +15,6 @@ export default function CustomerStatsCard({
   label,
   variant = "default",
 }: CustomerStatsCardProps) {
-  const bgColors = {
-    default: "bg-[#F0FDF4]",
-    danger: "bg-[#FEF2F2]",
-    muted: "bg-[#F9FAFB]",
-  };
-
   const iconColors = {
     default: "text-[#219e02]",
     danger: "text-[#EF4444]",

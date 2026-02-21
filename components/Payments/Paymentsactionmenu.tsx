@@ -4,27 +4,24 @@ import {
   Eye,
   ShoppingBag,
   MessageSquare,
-  Clock,
+  CreditCard,
   FileText,
-  UserX,
-  UserCheck,
+  Ban,
 } from "@/lib/icons";
 
-interface CookActionMenuProps {
-  cookId: string;
-  cookName: string;
-  status: "Online" | "Not Active" | "Suspended";
+interface PaymentsActionMenuProps {
+  customerId: string;
+  customerName: string;
   onClose: () => void;
 }
 
-export default function CookActionMenu({
-  cookId,
-  cookName,
-  status,
+export default function PaymentsActionMenu({
+  customerId,
+  customerName,
   onClose,
-}: CookActionMenuProps) {
+}: PaymentsActionMenuProps) {
   const handleAction = (action: string) => {
-    console.log(`${action} for cook:`, cookId);
+    console.log(`${action} for customer:`, customerId);
     onClose();
   };
 
@@ -47,19 +44,19 @@ export default function CookActionMenu({
       </button>
 
       <button
-        onClick={() => handleAction("message-cook")}
+        onClick={() => handleAction("message-user")}
         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
       >
         <MessageSquare className="w-4 h-4" />
-        Message Cook
+        Message User
       </button>
 
       <button
-        onClick={() => handleAction("change-status")}
+        onClick={() => handleAction("issue-credit")}
         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
       >
-        <Clock className="w-4 h-4" />
-        Change Status
+        <CreditCard className="w-4 h-4" />
+        Issue Credit
       </button>
 
       <button
@@ -72,23 +69,13 @@ export default function CookActionMenu({
 
       <div className="border-t border-gray-200 my-1" />
 
-      {status === "Suspended" ? (
-        <button
-          onClick={() => handleAction("reactivate-cook")}
-          className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2 transition-colors"
-        >
-          <UserCheck className="w-4 h-4" />
-          Reactivate Cook
-        </button>
-      ) : (
-        <button
-          onClick={() => handleAction("suspend-cook")}
-          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-        >
-          <UserX className="w-4 h-4" />
-          Suspend Cook
-        </button>
-      )}
+      <button
+        onClick={() => handleAction("suspend-user")}
+        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+      >
+        <Ban className="w-4 h-4" />
+        Suspend User
+      </button>
     </div>
   );
 }

@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, ChefHat, Star } from "@/lib/icons";
+
+import {
+  MoreVertical,
+  ChefHat,
+  Star,
+  Check,
+  AlertCircle,
+  CheckCircle,
+} from "@/lib/icons";
 import CookActionMenu from "./Cookactionmenu";
 
 export interface Cook {
@@ -12,9 +20,11 @@ export interface Cook {
   avatarColor: string;
   kitchen: string;
   city: string;
+  verified: "Verified" | "Pending";
   rating: number;
+  ratingNumber: number;
   orders: number;
-  status: "Online" | "Offline" | "Suspended";
+  status: "Online" | "Not Active" | "Suspended";
 }
 
 interface CooksTableProps {
@@ -41,62 +51,97 @@ export default function CooksTable({ cooks }: CooksTableProps) {
     }
   };
 
-  const renderStars = (rating: number) => {
+  const renderStars = (rating: number, ratingNumber: number) => {
     return (
       <div className="flex items-center gap-1">
         <Star className="w-4 h-4 fill-[#F59E0B] text-[#F59E0B]" />
         <span className="text-sm font-medium text-gray-900">{rating}</span>
-        <span className="text-sm text-gray-400">()</span>
+        <span className="text-sm text-gray-400">({ratingNumber})</span>
       </div>
     );
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto mt-6 border rounded-2xl ">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="px-6 py-3 text-left">
-              <input
-                type="checkbox"
-                checked={
-                  selectedCooks.length === cooks.length && cooks.length > 0
-                }
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4 h-4 text-[#219e02] focus:ring-[#219e02] rounded"
-              />
+            <th className="px-6 py-5 text-left">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedCooks.length === cooks.length && cooks.length > 0
+                  }
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="peer sr-only"
+                />
+
+                <div
+                  className="
+                    w-4 h-4 rounded-[4px]
+                    border-2 border-gray-300 bg-[#f7f7f7]
+                    flex items-center justify-center
+                    transition-all duration-200
+                    peer-checked:bg-[#219e02]
+                    peer-checked:border-[#219e02]
+                  "
+                >
+                  <Check strokeWidth={4} width={10} color="#fff" />
+                </div>
+              </label>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Name
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Kitchen
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               City
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              VERIFIED
+            </th>
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Rating
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Orders
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3"></th>
+            <th className="px-6 py-5"></th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {cooks.map((cook) => (
             <tr key={cook.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4">
-                <input
-                  type="checkbox"
-                  checked={selectedCooks.includes(cook.id)}
-                  onChange={(e) => handleSelectCook(cook.id, e.target.checked)}
-                  className="w-4 h-4 text-[#219e02] focus:ring-[#219e02] rounded"
-                />
+              <td className="px-6 py-8">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCooks.includes(cook.id)}
+                    onChange={(e) =>
+                      handleSelectCook(cook.id, e.target.checked)
+                    }
+                    className="peer sr-only"
+                  />
+
+                  <div
+                    className="
+                    w-4 h-4 rounded-[4px]
+                    border-2 border-gray-300 bg-[#f7f7f7]
+                    flex items-center justify-center
+                    transition-all duration-200
+                    peer-checked:bg-[#219e02]
+                    peer-checked:border-[#219e02]
+                  "
+                  >
+                    <Check strokeWidth={4} width={10} color="#fff" />
+                  </div>
+                </label>
               </td>
 
               {/* Name */}
@@ -135,9 +180,29 @@ export default function CooksTable({ cooks }: CooksTableProps) {
                 <div className="text-sm text-gray-900">{cook.city}</div>
               </td>
 
+              {/* Verified */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full ${
+                    cook.verified === "Verified"
+                      ? "text-[#219e02]"
+                      : cook.verified === "Pending"
+                        ? "text-[#EF4444]"
+                        : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {cook.verified === "Verified" ? (
+                    <CheckCircle className="w-4 h-4 text-[#219e02]" />
+                  ) : cook.verified === "Pending" ? (
+                    <AlertCircle className="w-4 h-4 text-[#F59E0B]" />
+                  ) : null}
+                  {cook.verified}
+                </span>
+              </td>
+
               {/* Rating */}
               <td className="px-6 py-4 whitespace-nowrap">
-                {renderStars(cook.rating)}
+                {renderStars(cook.rating, cook.ratingNumber)}
               </td>
 
               {/* Orders */}

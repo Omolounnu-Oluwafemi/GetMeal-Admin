@@ -19,6 +19,7 @@ export {
   ArrowUpRight,
   ArrowDownRight,
   Printer,
+  EyeOff
 } from 'lucide-react';
 
 // Action Icons (20)
@@ -60,6 +61,7 @@ export {
   Shield,
   Ban,
   Star,
+  LogIn
 } from 'lucide-react';
 
 // Order & Commerce Icons (10)

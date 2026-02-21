@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
   title: "Getameal Admin Dashboard",
@@ -16,19 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="flex min-h-screen bg-[#fafafa]">
-          {/* Sidebar */}
-          <Sidebar />
-
-          {/* Main Content */}
-          <div className="flex-1 ml-[108px]">
-            {/* Header */}
-            <Header />
-
-            {/* Page Content */}
-            <main className="p-4 pt-6">{children}</main>
-          </div>
-        </div>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

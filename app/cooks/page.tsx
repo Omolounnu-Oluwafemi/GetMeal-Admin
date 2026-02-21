@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChefHat,
   ShoppingCart,
@@ -23,7 +23,9 @@ const cooksData: Cook[] = [
     avatarColor: "#219e02",
     kitchen: "Chef Emeka",
     city: "Lagos",
+    verified: "Pending",
     rating: 4.2,
+    ratingNumber: 48,
     orders: 45,
     status: "Suspended",
   },
@@ -35,7 +37,9 @@ const cooksData: Cook[] = [
     avatarColor: "#6B7280",
     kitchen: "Adamu's Grill",
     city: "Kaduna",
+    verified: "Verified",
     rating: 4.4,
+    ratingNumber: 98,
     orders: 124,
     status: "Online",
   },
@@ -47,7 +51,9 @@ const cooksData: Cook[] = [
     avatarColor: "#8B4513",
     kitchen: "Chef Tayo",
     city: "Ibadan",
+    verified: "Verified",
     rating: 4.5,
+    ratingNumber: 28,
     orders: 154,
     status: "Online",
   },
@@ -59,9 +65,11 @@ const cooksData: Cook[] = [
     avatarColor: "#9333EA",
     kitchen: "Chef Chukwudi",
     city: "Enugu",
+    verified: "Pending",
     rating: 4.5,
+    ratingNumber: 8,
     orders: 142,
-    status: "Online",
+    status: "Not Active",
   },
 ];
 
@@ -72,17 +80,27 @@ export default function CooksPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  const handleApplyFilters = () => {
+  useEffect(() => {
     const filters: string[] = [];
-    if (selectedStatus.length > 0) {
-      selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
-    }
-    if (selectedCities.length > 0) {
-      selectedCities.forEach((city) => filters.push(`City: ${city}`));
-    }
+
+    selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
+
+    selectedCities.forEach((city) => filters.push(`City: ${city}`));
+
     setActiveFilters(filters);
-    setShowFilters(false);
-  };
+  }, [selectedStatus, selectedCities]);
+
+  // const handleApplyFilters = () => {
+  //   const filters: string[] = [];
+  //   if (selectedStatus.length > 0) {
+  //     selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
+  //   }
+  //   if (selectedCities.length > 0) {
+  //     selectedCities.forEach((city) => filters.push(`City: ${city}`));
+  //   }
+  //   setActiveFilters(filters);
+  //   setShowFilters(false);
+  // };
 
   const handleClearFilters = () => {
     setSelectedStatus([]);
@@ -112,7 +130,7 @@ export default function CooksPage() {
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-5">
         <CookStatsCard
           icon={ChefHat}
           value={11}
@@ -138,14 +156,14 @@ export default function CooksPage() {
           icon={XCircle}
           value={3}
           label="Cancellations Today"
-          variant="danger"
+          variant="default"
         />
 
         <CookStatsCard
           icon={RefreshCw}
           value={2}
           label="Refunds Today"
-          variant="muted"
+          variant="default"
         />
 
         <CookStatsCard
@@ -157,7 +175,7 @@ export default function CooksPage() {
       </div>
 
       {/* Cooks Table */}
-      <div className="bg-white rounded-[20px] border border-[#F3F4F6] overflow-hidden">
+      <div className=" overflow-hidden">
         {/* Filter Bar */}
         <FilterBar
           showFilters={showFilters}
@@ -176,7 +194,6 @@ export default function CooksPage() {
             onStatusChange={setSelectedStatus}
             onCitiesChange={setSelectedCities}
             onSortChange={setSortBy}
-            onApply={handleApplyFilters}
             onClear={handleClearFilters}
           />
         )}

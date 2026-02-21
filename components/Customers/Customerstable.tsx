@@ -50,7 +50,7 @@ export default function CustomersTable({ customers }: CustomersTableProps) {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto mt-6 border rounded-2xl">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -108,7 +108,7 @@ export default function CustomersTable({ customers }: CustomersTableProps) {
               className="hover:bg-[#f9fafb] transition-colors cursor-pointer"
             >
               <td className="px-6 py-8">
-                <label>
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selectedCustomers.includes(customer.id)}

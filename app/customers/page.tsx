@@ -187,29 +187,28 @@ export default function CustomersPage() {
         />
       </div>
 
-      <FilterBar
-        showFilters={showFilters}
-        activeFilters={activeFilters}
-        onToggleFilters={() => setShowFilters(!showFilters)}
-        onRemoveFilter={handleRemoveFilter}
-        onExport={handleExport}
-      />
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <CustomersFilterPanel
-          selectedStatus={selectedStatus}
-          selectedCities={selectedCities}
-          sortBy={sortBy}
-          onStatusChange={setSelectedStatus}
-          onCitiesChange={setSelectedCities}
-          onSortChange={setSortBy}
-          onClear={handleClearFilters}
-        />
-      )}
-
       {/* Customers Table */}
-      <div className="mt-6 bg-white rounded-[20px] border border-[#F3F4F6] overflow-hidden">
+      <div className=" overflow-hidden">
+        <FilterBar
+          showFilters={showFilters}
+          activeFilters={activeFilters}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          onRemoveFilter={handleRemoveFilter}
+          onExport={handleExport}
+        />
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <CustomersFilterPanel
+            selectedStatus={selectedStatus}
+            selectedCities={selectedCities}
+            sortBy={sortBy}
+            onStatusChange={setSelectedStatus}
+            onCitiesChange={setSelectedCities}
+            onSortChange={setSortBy}
+            onClear={handleClearFilters}
+          />
+        )}
         {/* Table */}
         <CustomersTable customers={customersData} />
       </div>
