@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
-} from "@/lib/icons";
+import { ArrowUpRight, ArrowDownRight } from "@/lib/icons";
 
 interface StatCardProps {
   label: string;

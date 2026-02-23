@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, Mail, Lock } from "@/lib/icons";
+import { Eye, EyeOff, ArrowRight, Mail, Lock, Check } from "@/lib/icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,22 +31,32 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {/* Logo */}
-      <div className="mb-8">
-        <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center">
-          <div className="w-12 h-12 bg-[#219e02] rounded-full" />
+      <div className="h-[75px] flex items-center justify-center border-[#F3F4F6] mb-14">
+        <div className="px-6 py-4 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden">
+          <img
+            src="/logoWhite.svg"
+            alt="Getameal Logo"
+            width={30}
+            height={40}
+            className="object-contain [&>*]:fill-[#219e02]"
+            style={{
+              filter:
+                "brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(97%) contrast(50%)",
+            }}
+          />
         </div>
       </div>
 
       {/* Welcome Text */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">Welcome Back</h1>
+        <p className="text-gray-600 text-sm">
           Sign in to access the Getameal Admin Dashboard
         </p>
       </div>
 
       {/* Login Form */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-8">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
@@ -59,7 +69,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="kingsleyezechukwu2018@gmail.com"
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 bg-[#f3f3f5] border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
                 required
               />
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -77,7 +87,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••"
-                className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                className="w-full pl-10 pr-12 py-3 bg-[#f3f3f5] border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
                 required
               />
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -102,13 +112,27 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-[#219e02] focus:ring-[#219e02] border-gray-300 rounded"
+                className="peer sr-only"
               />
-              <span className="text-sm text-gray-700">Remember me</span>
+
+              <div
+                className="
+                    w-4 h-4 rounded-md
+                    border-2 border-gray-300
+                    flex items-center justify-center
+                    transition-all duration-200
+                    peer-checked:bg-[#219e02]
+                    peer-checked:border-[#219e02]
+                  "
+              >
+                <Check strokeWidth={2} width={17} color="#fff" />
+              </div>
+              <span className="text-xs text-gray-700">Remember me</span>
             </label>
+
             <a
               href="/forgot-password"
-              className="text-sm text-[#219e02] hover:underline font-medium"
+              className="text-xs text-[#219e02] hover:underline font-medium"
             >
               Forgot password?
             </a>
@@ -118,14 +142,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#219e02] text-white rounded-lg font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#219e02] text-white rounded-xl font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                Sign In
-                <ArrowRight className="w-5 h-5" />
+                <span className="text-sm">Sign In</span>
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
