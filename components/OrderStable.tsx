@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { MoreVertical, Phone, User, X, DollarSign } from "@/lib/icons";
 import OrderDetailsSidebar from "@/components/Order/Orderdetailssidebar";
 import OrderFiltersPopover from "@/components/Order/OrderFiltersPopover";
+import { SlidersHorizontal } from "lucide-react";
 
 export interface Order {
   id: string;
@@ -296,9 +297,25 @@ export default function OrdersTable() {
   };
 
   const handleExportCSV = () => {
-    const headers = ["Order ID", "Meal", "Items", "Customer Area", "Payment", "Cook", "Status", "Payment Status"];
+    const headers = [
+      "Order ID",
+      "Meal",
+      "Items",
+      "Customer Area",
+      "Payment",
+      "Cook",
+      "Status",
+      "Payment Status",
+    ];
     const rows = filteredOrders.map((o) => [
-      o.orderId, `"${o.meal}"`, o.items, o.customerArea, o.payment, `"${o.cook.name}"`, o.status, o.paymentStatus,
+      o.orderId,
+      `"${o.meal}"`,
+      o.items,
+      o.customerArea,
+      o.payment,
+      `"${o.cook.name}"`,
+      o.status,
+      o.paymentStatus,
     ]);
     const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -319,10 +336,13 @@ export default function OrdersTable() {
   };
 
   // Apply filters then sort
-  let filteredOrders = activeTab === "all" ? orders : orders.filter((o) => o.tabKey === activeTab);
+  let filteredOrders =
+    activeTab === "all" ? orders : orders.filter((o) => o.tabKey === activeTab);
 
   if (paymentStatuses.length > 0) {
-    filteredOrders = filteredOrders.filter((o) => paymentStatuses.includes(o.paymentStatus));
+    filteredOrders = filteredOrders.filter((o) =>
+      paymentStatuses.includes(o.paymentStatus),
+    );
   }
   if (atRiskOnly) {
     filteredOrders = filteredOrders.filter((o) => o.tabKey === "at-risk");
@@ -331,7 +351,9 @@ export default function OrdersTable() {
   filteredOrders = [...filteredOrders].sort((a, b) => {
     let cmp = 0;
     if (sortBy === "Amount") {
-      cmp = parseInt(a.payment.replace(/[^0-9]/g, "")) - parseInt(b.payment.replace(/[^0-9]/g, ""));
+      cmp =
+        parseInt(a.payment.replace(/[^0-9]/g, "")) -
+        parseInt(b.payment.replace(/[^0-9]/g, ""));
     } else if (sortBy === "Status") {
       cmp = a.status.localeCompare(b.status);
     } else if (sortBy === "Area") {
@@ -365,26 +387,7 @@ export default function OrdersTable() {
           </button>
         ))}
 
-        {/* Filter Icon */}
-        <button
-          ref={filterButtonRef}
-          onClick={() => setShowFilters(!showFilters)}
-          className="ml-auto p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <svg
-            className="w-5 h-5 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-            />
-          </svg>
-        </button>
+        <SlidersHorizontal className="w-4 h-4 ml-auto" />
       </div>
 
       <OrderFiltersPopover

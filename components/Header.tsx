@@ -1,24 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  Send,
-  Bell,
-  Calendar,
-  ChevronDown,
-  Megaphone,
-} from "@/lib/icons";
+import { usePathname } from "next/navigation";
+import { Search, Bell, Megaphone } from "@/lib/icons";
 import BroadcastModal from "./BroadcastModal";
 import DateFilterDropdown from "./DateFilterDropdown";
 import ZoneFilterDropdown from "./ZoneFilterDropdown";
+import LinkedFilterDropdown from "./LinkedFilterDropdown";
+import OrdersHeaderFilters from "./OrdersHeaderFilters";
 
-interface HeaderProps {
-  title?: string;
-}
+const TITLE_MAP: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/orders": "Orders",
+  "/customers": "Customers",
+  "/cooks": "Cooks",
+  "/snapshot": "Snapshot",
+  "/payments": "Payments",
+  "/settings": "Settings",
+};
 
-export default function Header({ title = "Dashboard" }: HeaderProps) {
+export default function Header() {
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const pathname = usePathname();
+  const title = TITLE_MAP[pathname] ?? "Dashboard";
+
+  const renderFilters = () => {
+    if (pathname === "/dashboard") {
+      return (
+        <>
+          <DateFilterDropdown />
+          <ZoneFilterDropdown />
+        </>
+      );
+    }
+    if (pathname === "/customers") {
+      return <LinkedFilterDropdown statusOptions={["Active", "Suspended"]} />;
+    }
+    if (pathname === "/cooks") {
+      return <LinkedFilterDropdown statusOptions={["Active", "Inactive"]} />;
+    }
+    if (pathname === "/orders") {
+      return <OrdersHeaderFilters />;
+    }
+    return null;
+  };
 
   return (
     <>
@@ -26,10 +51,7 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
         {/* Left: Title and Filters */}
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-semibold text-[#111827]">{title}</h1>
-
-          {/* Date Filter */}
-          <DateFilterDropdown />
-          <ZoneFilterDropdown />
+          {renderFilters()}
         </div>
 
         {/* Right: Search, Broadcast, Notifications */}

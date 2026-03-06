@@ -25,12 +25,14 @@ export default function LayoutWrapper({
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 ml-[108px]">
+      <div className="flex-1 ml-[108px] flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <Header />
+        <div className="sticky top-0 z-30">
+          <Header />
+        </div>
 
         {/* Page Content */}
-        <main className="p-4 pt-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 pt-6">{children}</main>
       </div>
     </div>
   );
