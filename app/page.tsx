@@ -32,7 +32,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {/* Logo */}
       <div className="h-[75px] flex items-center justify-center border-[#F3F4F6] mb-14">
-        <div className="px-6 py-4 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden">
+        <div className="px-7 py-5 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden">
           <img
             src="/logoWhite.svg"
             alt="Getameal Logo"
@@ -56,7 +56,7 @@ export default function LoginPage() {
       </div>
 
       {/* Login Form */}
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-sm p-8">
+      <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="kingsleyezechukwu2018@gmail.com"
-                className="w-full pl-10 pr-4 py-3 bg-[#f3f3f5] border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-[#f3f3f5] border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
                 required
               />
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••"
-                className="w-full pl-10 pr-12 py-3 bg-[#f3f3f5] border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
+                className="w-full pl-10 pr-12 py-3 bg-[#f3f3f5] border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#219e02] focus:shadow-[0_0_0_3px_rgba(33,158,2,0.1)] transition-all"
                 required
               />
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -125,7 +125,7 @@ export default function LoginPage() {
                     peer-checked:border-[#219e02]
                   "
               >
-                <Check strokeWidth={2} width={17} color="#fff" />
+                <Check strokeWidth={2} width={17} color="#f3f3f5" />
               </div>
               <span className="text-xs text-gray-700">Remember me</span>
             </label>
@@ -157,7 +157,7 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <p className="mt-8 text-sm text-gray-500">
+      <p className="mt-6 text-xs text-gray-400">
         © 2026 Getameal. All rights reserved.
       </p>
     </div>

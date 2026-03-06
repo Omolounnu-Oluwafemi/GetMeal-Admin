@@ -1,10 +1,11 @@
 "use client";
 import { AlertTriangle, AlertCircle, X, ArrowRight } from "@/lib/icons";
+import { Clock4 } from "lucide-react";
 const alerts = [
   {
     id: 1,
     type: "error" as const,
-    icon: AlertCircle,
+    icon: Clock4,
     title: "Late Orders",
     count: 8,
     description: "Late Orders",
@@ -17,7 +18,7 @@ const alerts = [
   {
     id: 2,
     type: "warning" as const,
-    icon: AlertCircle,
+    icon: Clock4,
     title: "Payment Failures",
     count: 3,
     description: "Payment Failures",
@@ -30,7 +31,7 @@ const alerts = [
   {
     id: 3,
     type: "warning" as const,
-    icon: AlertCircle,
+    icon: Clock4,
     title: "Payment Failures",
     count: 3,
     description: "Payment Failures",
@@ -54,7 +55,9 @@ export default function SystemAlerts() {
             13 issues requiring attention
           </p>
         </div>
-        <AlertTriangle className="w-6 h-6 text-[#F59E0B]" />
+        <div className="bg-[#faf1f1] p-2 rounded-md">
+          <AlertTriangle className="w-5 h-5 text-[#f5460b]  ]" />
+        </div>
       </div>
       {/* Alerts List - Scrollable without visible scrollbar */}
       <div className="h-[400px] overflow-y-auto overflow-x-hidden scrollbar-hide">
@@ -62,55 +65,63 @@ export default function SystemAlerts() {
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className="p-4 rounded-[12px] border transition-all hover:shadow-sm"
+              className="p-4 rounded-[12px] border transition-all hover:shadow-sm grid grid-cols-[auto_1fr_auto] gap-3"
               style={{
                 backgroundColor: alert.bgColor,
                 borderColor: `${alert.color}20`,
               }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <alert.icon
-                    className="w-5 h-5"
-                    style={{ color: alert.color }}
-                  />
-                  <span className="font-semibold text-[#111827]">
+              {/* Col 1: Icon */}
+              <alert.icon
+                className="w-4 h-4 mt-0.5"
+                style={{ color: alert.color }}
+              />
+
+              {/* Col 2: Content */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-semibold text-[#111827] text-sm">
                     {alert.title}
                   </span>
                   <span
-                    className="px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                    style={{ backgroundColor: alert.color }}
+                    className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                    style={{
+                      outline: `1px solid ${alert.color}`,
+                      color: alert.color,
+                    }}
                   >
                     {alert.count}
                   </span>
                 </div>
-                <button className="p-1 hover:bg-white/50 rounded transition-colors">
-                  <X className="w-4 h-4 text-[#6B7280]" />
+                <div className="text-xs text-[#6B7280] mb-2">
+                  {alert.description}
+                </div>
+                <div className="flex items-center gap-1 mb-3">
+                  <span className="text-[11px] text-[#6B7280]">Zones:</span>
+                  {alert.zones.map((zone, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-1 bg-white rounded text-[10px] text-[#374151]"
+                    >
+                      {zone}
+                    </span>
+                  ))}
+                </div>
+                <div className="font-medium text-xs text-[#111827] mb-3">
+                  {alert.detail}
+                </div>
+                <button
+                  className="flex items-center gap-1 text-xs font-medium transition-colors mb-3"
+                  style={{ color: alert.color }}
+                >
+                  {alert.action}
+                  <ArrowRight className="w-4 h-3" />
                 </button>
               </div>
-              <div className="text-sm text-[#6B7280] mb-2">
-                {alert.description}
-              </div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs text-[#6B7280]">Zones:</span>
-                {alert.zones.map((zone, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-1 bg-white rounded text-xs text-[#374151]"
-                  >
-                    {zone}
-                  </span>
-                ))}
-              </div>
-              <div className="font-medium text-sm text-[#111827] mb-3">
-                {alert.detail}
-              </div>
-              <button
-                className="flex items-center gap-1 text-sm font-medium transition-colors"
-                style={{ color: alert.color }}
-              >
-                {alert.action}
-                <ArrowRight className="w-4 h-4" />
+
+              {/* Col 3: Dismiss */}
+              <button className="p-1 hover:bg-white/50 rounded transition-colors self-start">
+                <X className="w-4 h-4 text-[#6B7280]" />
               </button>
             </div>
           ))}

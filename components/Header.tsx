@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Send, Bell, Calendar, ChevronDown } from "@/lib/icons";
+import {
+  Search,
+  Send,
+  Bell,
+  Calendar,
+  ChevronDown,
+  Megaphone,
+} from "@/lib/icons";
 import BroadcastModal from "./BroadcastModal";
+import DateFilterDropdown from "./DateFilterDropdown";
+import ZoneFilterDropdown from "./ZoneFilterDropdown";
 
 interface HeaderProps {
   title?: string;
@@ -19,19 +28,8 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
           <h1 className="text-2xl font-semibold text-[#111827]">{title}</h1>
 
           {/* Date Filter */}
-          <button className="flex items-center justify-between px-3 py-2 border border-[#E5E7EB] rounded-full text-sm text-[#6B7280] hover:border-[#209d01] transition-colors min-w-[140px]">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span>Today</span>
-            </div>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-
-          {/* Zone Filter */}
-          <button className="flex items-center gap-2  justify-between px-3 py-2 border border-[#E5E7EB] rounded-full text-sm text-[#6B7280] hover:border-[#209d01] transition-colors min-w-[160px]">
-            <span>All Zones</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
+          <DateFilterDropdown />
+          <ZoneFilterDropdown />
         </div>
 
         {/* Right: Search, Broadcast, Notifications */}
@@ -49,9 +47,9 @@ export default function Header({ title = "Dashboard" }: HeaderProps) {
           {/* Send Broadcast Button */}
           <button
             onClick={() => setShowBroadcast(true)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#209d01] text-white rounded-full font-medium text-sm hover:bg-[#1a7d01] transition-colors"
+            className="flex items-center gap-2 px-4 py-3 bg-[#209d01] text-white rounded-full font-medium text-xs hover:bg-[#1a7d01] transition-colors"
           >
-            <Send className="w-5 h-5" />
+            <Megaphone className="w-4 h-4" />
             Send Broadcast
           </button>
 

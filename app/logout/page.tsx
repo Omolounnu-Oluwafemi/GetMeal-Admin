@@ -11,7 +11,7 @@ export default function LogoutPage() {
   };
 
   const handleReturnToLogin = () => {
-    router.push("/login");
+    router.push("/");
   };
 
   return (
