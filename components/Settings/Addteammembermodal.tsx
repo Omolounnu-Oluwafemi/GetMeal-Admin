@@ -1,7 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { X, UserPlus, Check } from "@/lib/icons";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  X,
+  UserPlus,
+  Check,
+  ChevronDown,
+  Mail,
+  AlertCircle,
+} from "@/lib/icons";
 
 interface AddTeamMemberModalProps {
   onClose: () => void;
@@ -51,30 +59,66 @@ export default function AddTeamMemberModal({
   const [selectedRole, setSelectedRole] = useState("operations-agent");
   const [sendInvitation, setSendInvitation] = useState(true);
   const [sending, setSending] = useState(false);
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [toast, setToast] = useState<{
+    type: "error" | "success";
+    message: string;
+  } | null>(null);
 
-  const currentRole = roles.find((r) => r.value === selectedRole);
+  const roleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (roleRef.current && !roleRef.current.contains(e.target as Node))
+        setRoleOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
+
+  const currentRole = roles.find((r) => r.value === selectedRole)!;
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim()) return;
-
+    if (!name.trim()) {
+      setToast({
+        type: "error",
+        message: "Please enter the member's full name",
+      });
+      return;
+    }
+    if (!email.trim()) {
+      setToast({
+        type: "error",
+        message: "Please enter the member's email address",
+      });
+      return;
+    }
     setSending(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     onAdd({ name, email, role: selectedRole });
+    setToast({ type: "success", message: "Invitation sent successfully!" });
     setSending(false);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-[20px] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[20px] w-full max-w-xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-[#F0FDF4] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-[#F0FDF4] flex items-center justify-center flex-shrink-0">
                 <UserPlus className="w-6 h-6 text-[#219e02]" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900">
                   Add Team Member
                 </h3>
                 <p className="text-sm text-gray-500 mt-0.5">
@@ -92,21 +136,21 @@ export default function AddTeamMemberModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5 overflow-y-auto flex-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Full Name */}
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Full Name <span className="text-red-500">*</span>
             </label>
             <div className="relative">
+              <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Adaobi Nwosu"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
               />
-              <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             </div>
           </div>
 
@@ -116,28 +160,16 @@ export default function AddTeamMemberModal({
               Email Address <span className="text-red-500">*</span>
             </label>
             <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="adaobi@getameal.com"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
               />
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-xs text-gray-400 mt-1.5">
               Invitation will be sent to this email address
             </p>
           </div>
@@ -147,79 +179,110 @@ export default function AddTeamMemberModal({
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Role
             </label>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#219e02] focus:border-transparent"
-            >
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1.5">
-              {currentRole?.description}
+            <div ref={roleRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setRoleOpen((p) => !p)}
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+              >
+                <span>{currentRole.label}</span>
+                <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              </button>
+              {roleOpen && (
+                <div className="absolute top-[calc(100%+4px)] left-0 z-50 w-full bg-white rounded-xl shadow-lg border border-gray-100 py-1">
+                  {roles.map((role) => (
+                    <button
+                      key={role.value}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRole(role.value);
+                        setRoleOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                    >
+                      <span>{role.label}</span>
+                      {selectedRole === role.value && (
+                        <Check className="w-4 h-4 text-[#219e02]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">
+              {currentRole.description}
             </p>
           </div>
 
           {/* Permissions */}
-          {currentRole && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-900 mb-3">
-                This role will have access to:
-              </div>
-              <ul className="space-y-2">
-                {currentRole.permissions.map((permission, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 text-sm text-gray-700"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#219e02] mt-1.5 flex-shrink-0" />
-                    {permission}
-                  </li>
-                ))}
-              </ul>
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <div className="text-sm font-medium text-gray-900 mb-3">
+              This role will have access to:
             </div>
-          )}
+            <ul className="space-y-2">
+              {currentRole.permissions.map((permission, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-2 text-sm text-gray-600"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#219e02] flex-shrink-0" />
+                  {permission}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Send Invitation Checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer">
-            <div className="relative flex items-center justify-center">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+            <div>
+              <div className="text-sm font-medium text-gray-900">
+                Send invitation email
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                Member will receive an email with setup instructions
+              </div>
+            </div>
+            <label className="cursor-pointer flex-shrink-0">
               <input
                 type="checkbox"
                 checked={sendInvitation}
                 onChange={(e) => setSendInvitation(e.target.checked)}
-                className="w-5 h-5 text-[#219e02] focus:ring-[#219e02] border-gray-300 rounded"
+                className="peer sr-only"
               />
-              {sendInvitation && (
-                <Check className="absolute w-4 h-4 text-white pointer-events-none" />
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">
-                Send invitation email
+              <div className="w-[18px] h-[18px] rounded-md border-2 border-gray-300 flex items-center justify-center transition-all duration-200 peer-checked:bg-[#219e02] peer-checked:border-[#219e02]">
+                <Check strokeWidth={3} width={12} color="#fff" />
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                New team will receive an email with setup instructions
+            </label>
+          </div>
+
+          {/* About Invitations */}
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+            <Mail className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-medium text-blue-900">
+                About invitations
               </div>
+              <p className="text-xs text-blue-600 mt-0.5">
+                The invited member will receive an email with a secure link to
+                set up their account. The link expires in 7 days.
+              </p>
             </div>
-          </label>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 flex-shrink-0">
           <button
             onClick={onClose}
             disabled={sending}
-            className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!name.trim() || !email.trim() || sending}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#219e02] text-white rounded-lg text-sm font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={sending}
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {sending ? (
               <>
@@ -235,6 +298,21 @@ export default function AddTeamMemberModal({
           </button>
         </div>
       </div>
-    </div>
+
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-lg border ${toast.type === "error" ? "border-red-100" : "border-green-100"} z-50 min-w-[280px]`}
+        >
+          {toast.type === "error" ? (
+            <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+          ) : (
+            <Check className="w-5 h-5 text-[#219e02] flex-shrink-0" />
+          )}
+          <span className="text-sm text-gray-800">{toast.message}</span>
+        </div>
+      )}
+    </div>,
+    document.body
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock as LockIcon, Eye, Key, Shield, Globe, LogOut } from "@/lib/icons";
 import SettingsNav from "@/components/Settings/Settingsnav";
 import ProfileSettings from "@/components/Settings/Profilesettings";
 import { NotificationSettings } from "@/components/Settings/Notificationandsystemsettings";
@@ -40,12 +41,14 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-100px)]">
+    <div className="flex p-4 gap-2">
       {/* Settings Navigation */}
       <SettingsNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-8">{renderContent()}</div>
+      <div className={`flex-1 ml-4 ${activeTab === "security" || activeTab === "system" ? "" : "p-6 bg-white rounded-2xl shadow-md"}`}>
+        {renderContent()}
+      </div>
 
       {/* Add Team Member Modal */}
       {showAddMemberModal && (
@@ -60,74 +63,194 @@ export default function SettingsPage() {
 
 // Security Settings Component
 function SecuritySettings() {
-  return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          Security Settings
-        </h2>
-        <p className="text-sm text-gray-600">
-          Manage your account security and privacy
-        </p>
-      </div>
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [passwords, setPasswords] = useState({
+    current: "",
+    newPass: "",
+    confirm: "",
+  });
 
-      <div className="space-y-6">
-        {/* Change Password */}
-        <div className="p-6 bg-gray-50 rounded-xl">
-          <h3 className="font-semibold text-gray-900 mb-2">Change Password</h3>
-          <p className="text-sm text-gray-600 mb-4">
+  return (
+    <div className="w-full space-y-6">
+      {/* Change Password Card */}
+      <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            Change Password
+          </h2>
+          <p className="text-sm text-gray-500">
             Update your password to keep your account secure
           </p>
-          <button className="px-4 py-2 bg-[#219e02] text-white rounded-lg text-sm font-medium hover:bg-[#1a7d01] transition-colors">
-            Change Password
+        </div>
+        <div className="space-y-5">
+          <div>
+            <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
+              Current Password
+            </label>
+            <div className="relative">
+              <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={passwords.current}
+                onChange={(e) =>
+                  setPasswords({ ...passwords, current: e.target.value })
+                }
+                placeholder="Enter current password"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
+              New Password
+            </label>
+            <div className="relative">
+              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type={showNew ? "text" : "password"}
+                value={passwords.newPass}
+                onChange={(e) =>
+                  setPasswords({ ...passwords, newPass: e.target.value })
+                }
+                placeholder="Enter new password"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1.5">
+              Must be at least 8 characters with letters and numbers
+            </p>
+          </div>
+          <div>
+            <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="password"
+                value={passwords.confirm}
+                onChange={(e) =>
+                  setPasswords({ ...passwords, confirm: e.target.value })
+                }
+                placeholder="Confirm new password"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <button
+            onClick={() =>
+              setPasswords({ current: "", newPass: "", confirm: "" })
+            }
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button className="flex items-center gap-3 px-4 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors">
+            Update Password
           </button>
         </div>
+      </div>
 
-        {/* Two-Factor Authentication */}
-        <div className="p-6 bg-gray-50 rounded-xl">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Two-Factor Authentication
-              </h3>
-              <p className="text-sm text-gray-600">
-                Add an extra layer of security to your account
-              </p>
+      {/* Two-Factor Authentication */}
+      <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">
+              Two-Factor Authentication
+            </h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Add an extra layer of security to your account
+            </p>
+          </div>
+          <span className="px-3 py-1 bg-orange-50 text-orange-500 text-xs font-medium rounded-full">
+            Not Enabled
+          </span>
+        </div>
+        <p className="text-sm text-gray-500 mb-5">
+          Two-factor authentication adds an additional layer of security to your
+          account by requiring more than just a password to sign in.
+        </p>
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors">
+          <Shield className="w-4 h-4" />
+          Enable 2FA
+        </button>
+      </div>
+
+      {/* Active Sessions */}
+      <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900">
+          Active Sessions
+        </h3>
+        <p className="text-sm text-gray-500 mt-0.5 mb-5">
+          Manage your active sessions across devices
+        </p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#F0FDF4] rounded-xl flex items-center justify-center flex-shrink-0">
+                <Globe className="w-5 h-5 text-[#219e02]" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  Chrome on MacOS
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  Lagos, Nigeria • Current session
+                </div>
+              </div>
             </div>
-            <button className="px-4 py-2 border border-[#219e02] text-[#219e02] rounded-lg text-sm font-medium hover:bg-[#F0FDF4] transition-colors">
-              Enable 2FA
+            <span className="px-3 py-1 bg-[#F0FDF4] text-[#219e02] text-xs font-medium rounded-lg">
+              Active
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Globe className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  Safari on iPhone
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  Lagos, Nigeria • Last active 2 hours ago
+                </div>
+              </div>
+            </div>
+            <button className="px-3 py-1 border border-red-400 text-red-500 text-xs font-medium rounded-lg hover:bg-red-50 transition-colors">
+              Revoke
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Active Sessions */}
-        <div className="p-6 bg-gray-50 rounded-xl">
-          <h3 className="font-semibold text-gray-900 mb-4">Active Sessions</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Current Session</div>
-                <div className="text-sm text-gray-500">
-                  Lagos, Nigeria • Chrome on Mac
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-[#F0FDF4] text-[#219e02] text-xs font-medium rounded-full">
-                Active Now
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Danger Zone */}
-        <div className="p-6 bg-red-50 border-2 border-red-200 rounded-xl">
-          <h3 className="font-semibold text-red-900 mb-2">Danger Zone</h3>
-          <p className="text-sm text-red-600 mb-4">
-            Irreversible actions that affect your account
-          </p>
-          <button className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-            Delete Account
-          </button>
-        </div>
+      {/* Log Out */}
+      <div className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm">
+        <h3 className="text-base font-semibold text-red-600 mb-1">Log Out</h3>
+        <p className="text-sm text-gray-500 mb-5">
+          End your current session and return to the login page
+        </p>
+        <button className="flex items-center gap-2 px-4 py-2.5 border border-red-400 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors">
+          <LogOut className="w-4 h-4" />
+          Log Out
+        </button>
       </div>
     </div>
   );

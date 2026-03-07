@@ -25,7 +25,7 @@ export default function LayoutWrapper({
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 ml-[108px] flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 ml-[108px] flex flex-col h-screen">
         {/* Header */}
         <div className="sticky top-0 z-30">
           <Header />

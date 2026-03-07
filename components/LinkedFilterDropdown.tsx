@@ -73,7 +73,7 @@ export default function LinkedFilterDropdown({
   const [typeOpen, setTypeOpen] = useState(false);
   const typeRef = useRef<HTMLDivElement>(null);
 
-  const secondaryMap = { ...SECONDARY_OPTIONS, Status: statusOptions };
+  const secondaryMap: Record<string, string[]> = { ...SECONDARY_OPTIONS, Status: statusOptions };
   const secondaryOpts = secondaryMap[filterType] ?? [];
   const [secondaryValue, setSecondaryValue] = useState(secondaryOpts[0] ?? "");
 

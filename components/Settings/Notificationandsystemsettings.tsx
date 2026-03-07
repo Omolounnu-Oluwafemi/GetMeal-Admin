@@ -10,6 +10,47 @@ interface NotificationToggle {
   enabled: boolean;
 }
 
+function CustomCheckbox({
+  checked,
+  onChange,
+  label,
+  description,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start justify-between py-1.5">
+      <div className="flex-1">
+        <div className="font-medium text-gray-900 text-sm">{label}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{description}</div>
+      </div>
+      <label className="flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="peer sr-only"
+        />
+        <div
+          className="
+            w-[18px] h-[18px] rounded-md
+            border-2 border-gray-300
+            flex items-center justify-center
+            transition-all duration-200
+            peer-checked:bg-[#219e02]
+            peer-checked:border-[#219e02]
+          "
+        >
+          <Check strokeWidth={2} width={18} color="#fff" />
+        </div>
+      </label>
+    </div>
+  );
+}
+
 export function NotificationSettings() {
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [alerts, setAlerts] = useState<NotificationToggle[]>([
@@ -44,87 +85,120 @@ export function NotificationSettings() {
       enabled: true,
     },
   ]);
+  const [reports, setReports] = useState<NotificationToggle[]>([
+    {
+      id: "weekly-reports",
+      label: "Weekly Reports",
+      description: "Receive weekly performance summary",
+      enabled: true,
+    },
+    {
+      id: "monthly-reports",
+      label: "Monthly Reports",
+      description: "Receive monthly business analytics",
+      enabled: true,
+    },
+  ]);
 
   const toggleAlert = (id: string) => {
     setAlerts(
-      alerts.map((alert) =>
-        alert.id === id ? { ...alert, enabled: !alert.enabled } : alert,
-      ),
+      alerts.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)),
     );
   };
 
+  const toggleReport = (id: string) => {
+    setReports(
+      reports.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)),
+    );
+  };
+
+  const handleSave = () => {
+    console.log("Saving notification settings...");
+  };
+
+  const handleCancel = () => {
+    console.log("Cancelled");
+  };
+
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+    <div className="w-full">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">
           Notification Preferences
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-[13px] text-gray-600">
           Choose what notifications you want to receive
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-1">
         {/* Email Notifications */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Email Notifications
-          </h3>
-          <label className="flex items-start gap-3 cursor-pointer">
-            <div className="relative flex items-center justify-center mt-0.5">
-              <input
-                type="checkbox"
-                checked={emailEnabled}
-                onChange={(e) => setEmailEnabled(e.target.checked)}
-                className="w-5 h-5 text-[#219e02] focus:ring-[#219e02] border-gray-300 rounded"
-              />
-              {emailEnabled && (
-                <Check className="absolute w-4 h-4 text-white pointer-events-none" />
-              )}
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-900">
-                Enable email notifications
-              </div>
-              <div className="text-sm text-gray-500 mt-0.5">
-                Receive notifications via email
-              </div>
-            </div>
-          </label>
+        <h3 className="text-[15px] font-semibold text-gray-900">
+          Email Notifications
+        </h3>
+        <div className="space-y-2">
+          <div className="pb-6 pt-3 border-b border-gray-100">
+            <CustomCheckbox
+              checked={emailEnabled}
+              onChange={() => setEmailEnabled((p) => !p)}
+              label="Enable email notifications"
+              description="Receive notifications via email"
+            />
+          </div>
         </div>
 
         {/* Alert Types */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-[15px] font-semibold text-gray-900 pt-5 mb-3">
             Alert Types
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-2 border-b border-gray-100 pb-5">
             {alerts.map((alert) => (
-              <div
+              <CustomCheckbox
                 key={alert.id}
-                className="flex items-start justify-between py-3 border-b border-gray-100 last:border-0"
-              >
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{alert.label}</div>
-                  <div className="text-sm text-gray-500 mt-0.5">
-                    {alert.description}
-                  </div>
-                </div>
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={alert.enabled}
-                    onChange={() => toggleAlert(alert.id)}
-                    className="w-5 h-5 text-[#219e02] focus:ring-[#219e02] border-gray-300 rounded"
-                  />
-                  {alert.enabled && (
-                    <Check className="absolute w-4 h-4 text-white pointer-events-none" />
-                  )}
-                </div>
-              </div>
+                checked={alert.enabled}
+                onChange={() => toggleAlert(alert.id)}
+                label={alert.label}
+                description={alert.description}
+              />
             ))}
           </div>
         </div>
+
+        {/* Reports */}
+        <div>
+          <h3 className="text-[15px] font-semibold text-gray-900 pt-5 mb-3">
+            Reports
+          </h3>
+          <div className="space-y-2 border-b border-gray-100 pb-5">
+            {reports.map((report) => (
+              <CustomCheckbox
+                key={report.id}
+                checked={report.enabled}
+                onChange={() => toggleReport(report.id)}
+                label={report.label}
+                description={report.description}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-end gap-3 mt-8 ">
+        <button
+          onClick={handleCancel}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          className="flex items-center justify-between gap-5 px-3 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          Save Changes
+        </button>
       </div>
     </div>
   );

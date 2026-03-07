@@ -108,10 +108,18 @@ const zones = [
   {
     id: "6",
     name: "Festac / Amuwo",
-    cooksOnline: "12",
-    totalCooks: 28,
-    orders: 19,
+    cooksOnline: "8",
+    totalCooks: 25,
+    orders: 18,
     availability: 32,
+  },
+  {
+    id: "7",
+    name: "Badagry Axis",
+    cooksOnline: "5",
+    totalCooks: 15,
+    orders: 8,
+    availability: 33,
   },
 ];
 
