@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Search, Bell, Megaphone } from "@/lib/icons";
 import BroadcastModal from "./BroadcastModal";
+import NotificationsDropdown from "./NotificationsDropdown";
 import DateFilterDropdown from "./DateFilterDropdown";
 import ZoneFilterDropdown from "./ZoneFilterDropdown";
 import LinkedFilterDropdown from "./LinkedFilterDropdown";
@@ -21,6 +22,7 @@ const TITLE_MAP: Record<string, string> = {
 
 export default function Header() {
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
   const title = TITLE_MAP[pathname] ?? "Dashboard";
 
@@ -76,7 +78,10 @@ export default function Header() {
           </button>
 
           {/* Notifications */}
-          <button className="relative p-2.5 hover:bg-[#F3F4F6] rounded-lg transition-colors">
+          <button
+            onClick={() => setShowNotifications((p) => !p)}
+            className="relative p-2.5 hover:bg-[#F3F4F6] rounded-lg transition-colors"
+          >
             <Bell className="w-6 h-6 text-[#6B7280]" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full" />
           </button>
@@ -86,6 +91,11 @@ export default function Header() {
       {/* Broadcast Modal */}
       {showBroadcast && (
         <BroadcastModal onClose={() => setShowBroadcast(false)} />
+      )}
+
+      {/* Notifications Dropdown */}
+      {showNotifications && (
+        <NotificationsDropdown onClose={() => setShowNotifications(false)} />
       )}
     </>
   );
