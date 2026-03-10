@@ -387,7 +387,13 @@ export default function OrdersTable() {
           </button>
         ))}
 
-        <SlidersHorizontal className="w-4 h-4 ml-auto" />
+        <button
+          ref={filterButtonRef}
+          onClick={() => setShowFilters((p) => !p)}
+          className="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        >
+          <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+        </button>
       </div>
 
       <OrderFiltersPopover

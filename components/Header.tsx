@@ -69,13 +69,15 @@ export default function Header() {
           </div>
 
           {/* Send Broadcast Button */}
-          <button
-            onClick={() => setShowBroadcast(true)}
-            className="flex items-center gap-2 px-4 py-3 bg-[#209d01] text-white rounded-full font-medium text-xs hover:bg-[#1a7d01] transition-colors"
-          >
-            <Megaphone className="w-4 h-4" />
-            Send Broadcast
-          </button>
+          {pathname === "/dashboard" && (
+            <button
+              onClick={() => setShowBroadcast(true)}
+              className="flex items-center gap-2 px-4 py-3 bg-[#209d01] text-white rounded-full font-medium text-xs hover:bg-[#1a7d01] transition-colors"
+            >
+              <Megaphone className="w-4 h-4" />
+              Send Broadcast
+            </button>
+          )}
 
           {/* Notifications */}
           <button

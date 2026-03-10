@@ -169,7 +169,7 @@ export default function OrdersChart() {
       </div>
 
       {/* Chart */}
-      <div className="h-[320px]">
+      <div className="h-[380px]">
         {activeTab === "volume" ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={hourlyData} barGap={0} barCategoryGap={0}>

@@ -212,8 +212,8 @@ export default function CustomersTable({ customers }: CustomersTableProps) {
                 {/* Action Menu */}
                 {openMenuId === customer.id && (
                   <CustomerActionMenu
-                    customerId={customer.id}
                     customerName={customer.name}
+                    customerStatus={customer.status}
                     onClose={() => setOpenMenuId(null)}
                   />
                 )}
