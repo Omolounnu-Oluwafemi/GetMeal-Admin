@@ -10,9 +10,18 @@ import {
   Package,
   Clock,
   AlertCircle,
+  CreditCard,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useMessageCook,
+  useAddCookNote,
+  useUpdateCookStatus,
+  useCreditCookWallet,
+} from "@/lib/hooks/cooks";
 
 interface ModalProps {
+  cookId: string;
   cookName: string;
   onClose: () => void;
 }
@@ -76,9 +85,24 @@ export function ViewOrdersModal({ cookName, onClose }: ModalProps) {
 }
 
 /* ─── 2. Send Email Modal ─── */
-export function SendEmailModal({ cookName, onClose }: ModalProps) {
+export function SendEmailModal({ cookId, cookName, onClose }: ModalProps) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const { mutate, isPending } = useMessageCook(cookId);
+
+  const handleSend = () => {
+    mutate(
+      { subject, message },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to send email."),
+      },
+    );
+  };
 
   return (
     <ModalShell onClose={onClose}>
@@ -148,18 +172,35 @@ export function SendEmailModal({ cookName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!subject || !message}
+          onClick={handleSend}
+          disabled={!subject || !message || isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send Email
+          {isPending ? "Sending..." : "Send Email"}
         </button>
       </div>
     </ModalShell>
   );
 }
 
-/* ─── 3. Change Status Modal ─── */
-export function ChangeStatusModal({ cookName, onClose }: ModalProps) {
+/* ─── 3. Change Status Modal (set to Active / setActive) ─── */
+export function ChangeStatusModal({ cookId, cookName, onClose }: ModalProps) {
+  const { mutate, isPending } = useUpdateCookStatus(cookId);
+
+  const handleSetActive = () => {
+    mutate(
+      { action: "setActive" },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to update status."),
+      },
+    );
+  };
+
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
       {/* Header */}
@@ -203,8 +244,12 @@ export function ChangeStatusModal({ cookName, onClose }: ModalProps) {
         >
           Cancel
         </button>
-        <button className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors">
-          Set to Active
+        <button
+          onClick={handleSetActive}
+          disabled={isPending}
+          className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? "Updating..." : "Set to Active"}
         </button>
       </div>
     </ModalShell>
@@ -214,8 +259,23 @@ export function ChangeStatusModal({ cookName, onClose }: ModalProps) {
 /* ─── 4. Add Internal Note Modal ─── */
 const MAX_NOTE = 500;
 
-export function AddNoteModal({ cookName, onClose }: ModalProps) {
+export function AddNoteModal({ cookId, cookName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
+  const { mutate, isPending } = useAddCookNote(cookId);
+
+  const handleSubmit = () => {
+    mutate(
+      { note },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to add note."),
+      },
+    );
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -269,10 +329,11 @@ export function AddNoteModal({ cookName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!note.trim()}
+          onClick={handleSubmit}
+          disabled={!note.trim() || isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add Note
+          {isPending ? "Saving..." : "Add Note"}
         </button>
       </div>
     </ModalShell>
@@ -280,9 +341,24 @@ export function AddNoteModal({ cookName, onClose }: ModalProps) {
 }
 
 /* ─── 5. Reactivate Cook Modal ─── */
-export function ReactivateCookModal({ cookName, onClose }: ModalProps) {
+export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
+  const { mutate, isPending } = useUpdateCookStatus(cookId);
+
+  const handleReactivate = () => {
+    mutate(
+      { action: "activate", note, notify },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to reactivate cook."),
+      },
+    );
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -364,8 +440,12 @@ export function ReactivateCookModal({ cookName, onClose }: ModalProps) {
         >
           Cancel
         </button>
-        <button className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors">
-          Reactivate Account
+        <button
+          onClick={handleReactivate}
+          disabled={isPending}
+          className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? "Reactivating..." : "Reactivate Account"}
         </button>
       </div>
     </ModalShell>
@@ -382,11 +462,26 @@ const suspendReasons = [
   "Other",
 ];
 
-export function SuspendCookModal({ cookName, onClose }: ModalProps) {
+export function SuspendCookModal({ cookId, cookName, onClose }: ModalProps) {
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
   const [reasonOpen, setReasonOpen] = useState(false);
+  const { mutate, isPending } = useUpdateCookStatus(cookId);
+
+  const handleSuspend = () => {
+    mutate(
+      { action: "suspend", reason, note, notify },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to suspend cook."),
+      },
+    );
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[560px]">
@@ -502,10 +597,107 @@ export function SuspendCookModal({ cookName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!reason}
+          onClick={handleSuspend}
+          disabled={!reason || isPending}
           className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Suspend Account
+          {isPending ? "Suspending..." : "Suspend Account"}
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+/* ─── 7. Issue Credit Modal ─── */
+export function IssueCreditModal({ cookId, cookName, onClose }: ModalProps) {
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const { mutate, isPending } = useCreditCookWallet(cookId);
+
+  const handleSubmit = () => {
+    mutate(
+      { amount: Number(amount), reason },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+          onClose();
+        },
+        onError: (e: any) =>
+          toast.error(e?.response?.data?.message ?? "Failed to credit wallet."),
+      },
+    );
+  };
+
+  return (
+    <ModalShell onClose={onClose} width="w-[520px]">
+      {/* Header */}
+      <div className="flex items-start justify-between px-7 pt-6 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#ddf5e5] flex items-center justify-center flex-shrink-0">
+            <CreditCard className="w-5 h-5 text-[#219e02]" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-[#111827]">
+              Issue Credit to {cookName}
+            </h2>
+            <p className="text-xs text-[#6B7280] mt-0.5">
+              Add funds directly to this cook&apos;s wallet balance.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <X className="w-4 h-4 text-[#6B7280]" />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-7 pb-5 space-y-4">
+        <div className="p-4 border border-[#E5E7EB] rounded-xl">
+          <label className="block text-sm font-semibold text-[#111827] mb-2">
+            Amount (₦) <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            min={1}
+            className="w-full px-3 py-2.5 bg-[#f3f4f6] border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#219e02]/20 focus:border-[#219e02] transition-all"
+          />
+        </div>
+
+        <div className="p-4 border border-[#E5E7EB] rounded-xl">
+          <label className="block text-sm font-semibold text-[#111827] mb-2">
+            Reason{" "}
+            <span className="text-[#6B7280] font-normal">(optional)</span>
+          </label>
+          <textarea
+            placeholder="e.g., Compensation for delayed payout..."
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2.5 bg-[#f3f4f6] border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#219e02]/20 focus:border-[#219e02] transition-all resize-none"
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex gap-3 px-7 pb-7">
+        <button
+          onClick={onClose}
+          className="flex-1 py-3 rounded-xl border border-[#E5E7EB] text-sm font-semibold text-[#111827] hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={!amount || Number(amount) <= 0 || isPending}
+          className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? "Processing..." : "Issue Credit"}
         </button>
       </div>
     </ModalShell>

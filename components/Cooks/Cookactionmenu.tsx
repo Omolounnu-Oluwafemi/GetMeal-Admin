@@ -9,6 +9,7 @@ import {
   FileText,
   UserX,
   UserCheck,
+  CreditCard,
 } from "@/lib/icons";
 import {
   ViewOrdersModal,
@@ -17,6 +18,7 @@ import {
   AddNoteModal,
   ReactivateCookModal,
   SuspendCookModal,
+  IssueCreditModal,
 } from "./CookModals";
 import CookProfileSidebar from "./CookProfileSidebar";
 import type { Cook } from "./Cookstable";
@@ -27,6 +29,7 @@ type ModalType =
   | "message"
   | "change-status"
   | "add-note"
+  | "issue-credit"
   | "reactivate"
   | "suspend"
   | null;
@@ -88,6 +91,14 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
           Add Note
         </button>
 
+        <button
+          onClick={() => openModal("issue-credit")}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+        >
+          <CreditCard className="w-4 h-4" />
+          Issue Credit
+        </button>
+
         <div className="border-t border-gray-200 my-1" />
 
         {cook.status === "Suspended" ? (
@@ -120,22 +131,25 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
         />
       )}
       {activeModal === "view-orders" && (
-        <ViewOrdersModal cookName={cook.name} onClose={closeModal} />
+        <ViewOrdersModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "message" && (
-        <SendEmailModal cookName={cook.name} onClose={closeModal} />
+        <SendEmailModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "change-status" && (
-        <ChangeStatusModal cookName={cook.name} onClose={closeModal} />
+        <ChangeStatusModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "add-note" && (
-        <AddNoteModal cookName={cook.name} onClose={closeModal} />
+        <AddNoteModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
+      )}
+      {activeModal === "issue-credit" && (
+        <IssueCreditModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "reactivate" && (
-        <ReactivateCookModal cookName={cook.name} onClose={closeModal} />
+        <ReactivateCookModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "suspend" && (
-        <SuspendCookModal cookName={cook.name} onClose={closeModal} />
+        <SuspendCookModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
     </>
   );

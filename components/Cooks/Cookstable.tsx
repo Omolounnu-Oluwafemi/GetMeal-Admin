@@ -52,9 +52,10 @@ export interface Cook {
 
 interface CooksTableProps {
   cooks: Cook[];
+  loading?: boolean;
 }
 
-export default function CooksTable({ cooks }: CooksTableProps) {
+export default function CooksTable({ cooks, loading = false }: CooksTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedCooks, setSelectedCooks] = useState<string[]>([]);
 
@@ -139,7 +140,21 @@ export default function CooksTable({ cooks }: CooksTableProps) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {cooks.map((cook) => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="animate-pulse">
+                <td className="px-6 py-8"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-gray-200 rounded-full" /><div className="h-4 w-28 bg-gray-200 rounded" /></div></td>
+                <td className="px-6 py-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="h-4 w-10 bg-gray-200 rounded" /></td>
+                <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-200 rounded-full" /></td>
+                <td className="px-6 py-4"><div className="h-4 w-4 bg-gray-200 rounded" /></td>
+              </tr>
+            ))
+          ) : cooks.map((cook) => (
             <tr key={cook.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-8">
                 <label className="flex items-center cursor-pointer">
@@ -271,7 +286,7 @@ export default function CooksTable({ cooks }: CooksTableProps) {
               </td>
             </tr>
           ))}
-        </tbody>
+          </tbody>
       </table>
     </div>
   );

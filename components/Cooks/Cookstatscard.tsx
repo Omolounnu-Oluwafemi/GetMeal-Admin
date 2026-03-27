@@ -7,6 +7,7 @@ interface CookStatsCardProps {
   value: number | string;
   label: string;
   variant?: "default" | "danger" | "muted";
+  loading?: boolean;
 }
 
 export default function CookStatsCard({
@@ -14,6 +15,7 @@ export default function CookStatsCard({
   value,
   label,
   variant = "default",
+  loading = false,
 }: CookStatsCardProps) {
   const iconColors = {
     default: "text-[#219e02]",
@@ -31,7 +33,13 @@ export default function CookStatsCard({
       >
         <Icon className={`w-5 h-5 ${iconColors[variant]}`} />
       </div>
-      <div className="text-3xl font-bold text-gray-900 mb-1">{value}</div>
+      <div className="text-3xl font-bold text-gray-900 mb-1">
+        {loading ? (
+          <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
+        ) : (
+          value
+        )}
+      </div>
       <div className="text-sm text-gray-600">{label}</div>
     </div>
   );
