@@ -20,12 +20,14 @@ type ModalType =
   | null;
 
 interface CustomerActionMenuProps {
+  customerId: string;
   customerName: string;
   customerStatus: "Active" | "Suspended";
   onClose: () => void;
 }
 
 export default function CustomerActionMenu({
+  customerId,
   customerName,
   customerStatus,
   onClose,
@@ -87,19 +89,19 @@ export default function CustomerActionMenu({
       </div>
 
       {activeModal === "send-email" && (
-        <SendEmailModal customerName={customerName} onClose={closeModal} />
+        <SendEmailModal customerId={customerId} customerName={customerName} onClose={closeModal} />
       )}
       {activeModal === "issue-credit" && (
-        <IssueCreditModal customerName={customerName} onClose={closeModal} />
+        <IssueCreditModal customerId={customerId} customerName={customerName} onClose={closeModal} />
       )}
       {activeModal === "add-note" && (
-        <AddNoteModal customerName={customerName} onClose={closeModal} />
+        <AddNoteModal customerId={customerId} customerName={customerName} onClose={closeModal} />
       )}
       {activeModal === "suspend" && (
-        <SuspendUserModal customerName={customerName} onClose={closeModal} />
+        <SuspendUserModal customerId={customerId} customerName={customerName} onClose={closeModal} />
       )}
       {activeModal === "reactivate" && (
-        <ReactivateModal customerName={customerName} onClose={closeModal} />
+        <ReactivateModal customerId={customerId} customerName={customerName} onClose={closeModal} />
       )}
     </>
   );

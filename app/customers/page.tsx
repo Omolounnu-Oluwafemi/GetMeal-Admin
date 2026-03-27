@@ -5,7 +5,6 @@ import {
   Users,
   UserPlus,
   TrendingUp,
-  UserX,
   ShoppingCart,
   UserMinus,
 } from "@/lib/icons";
@@ -15,88 +14,52 @@ import CustomersFilterPanel from "@/components/Customers/Customersfilterpanel";
 import CustomersTable, {
   Customer,
 } from "@/components/Customers/Customerstable";
+import { useCustomers, ApiCustomer } from "@/lib/hooks/customers";
 
-// Sample customer data
-const customersData: Customer[] = [
-  {
-    id: "1",
-    name: "Mohammed Sani",
-    initials: "MS",
-    avatarColor: "#8B4513",
-    phone: "+234 814 678 9012",
-    email: "mohammed.sani@example.com",
-    city: "Kano",
-    orders: 15,
-    lastOrderDays: 18,
-    lastOrderDate: "30/01/2026",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Funke Adeyemi",
-    initials: "FA",
-    avatarColor: "#9333EA",
-    phone: "+234 815 234 5678",
-    email: "funke.adeyemi@example.com",
-    city: "Lagos",
-    orders: 12,
-    lastOrderDays: 30,
-    lastOrderDate: "15/01/2026",
-    status: "Suspended",
-  },
-  {
-    id: "3",
-    name: "Segun Akinwale",
-    initials: "SA",
-    avatarColor: "#219e02",
-    phone: "+234 808 234 5678",
-    email: "segun.a@example.com",
-    city: "Lagos",
-    orders: 18,
-    lastOrderDays: 16,
-    lastOrderDate: "01/02/2026",
-    status: "Active",
-  },
-  {
-    id: "4",
-    name: "Chioma Nwosu",
-    initials: "CN",
-    avatarColor: "#219e02",
-    phone: "+234 803 456 7890",
-    email: "chioma.nwosu@example.com",
-    city: "Abuja",
-    orders: 23,
-    lastOrderDays: 13,
-    lastOrderDate: "04/02/2026",
-    status: "Active",
-  },
-  {
-    id: "5",
-    name: "Grace Obi",
-    initials: "GO",
-    avatarColor: "#219e02",
-    phone: "+234 810 123 4567",
-    email: "grace.obi@example.com",
-    city: "Abuja",
-    orders: 44,
-    lastOrderDays: 12,
-    lastOrderDate: "06/02/2026",
-    status: "Active",
-  },
-  {
-    id: "6",
-    name: "Blessing Nneka",
-    initials: "BN",
-    avatarColor: "#6B7280",
-    phone: "+234 802 345 6789",
-    email: "blessing.n@example.com",
-    city: "Abuja",
-    orders: 72,
-    lastOrderDays: 12,
-    lastOrderDate: "05/02/2026",
-    status: "Active",
-  },
+const AVATAR_COLORS = [
+  "#8B4513",
+  "#9333EA",
+  "#219e02",
+  "#2563EB",
+  "#DC2626",
+  "#D97706",
+  "#0891B2",
+  "#7C3AED",
 ];
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function getAvatarColor(id: string) {
+  const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
+function mapCustomer(c: ApiCustomer): Customer {
+  const lastActive = new Date(c.lastActive);
+  const daysDiff = Math.floor(
+    (Date.now() - lastActive.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return {
+    id: c._id,
+    name: c.fullName,
+    initials: getInitials(c.fullName),
+    avatarColor: getAvatarColor(c._id),
+    phone: c.phone,
+    email: c.email,
+    city: c.city || "—",
+    orders: c.ordersCount,
+    lastOrderDays: daysDiff,
+    lastOrderDate: lastActive.toLocaleDateString("en-GB"),
+    status: c.status === "active" ? "Active" : "Suspended",
+  };
+}
 
 export default function CustomersPage() {
   const [showFilters, setShowFilters] = useState(false);
@@ -105,13 +68,19 @@ export default function CustomersPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
+  const { data, isLoading } = useCustomers({
+    status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
+    city: selectedCities[0],
+    sortBy,
+  });
+
+  const stats = data?.stats;
+  const customers: Customer[] = (data?.customers ?? []).map(mapCustomer);
+
   useEffect(() => {
     const filters: string[] = [];
-
-    selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
-
-    selectedCities.forEach((city) => filters.push(`City: ${city}`));
-
+    selectedStatus.forEach((s) => filters.push(`Status: ${s}`));
+    selectedCities.forEach((c) => filters.push(`City: ${c}`));
     setActiveFilters(filters);
   }, [selectedStatus, selectedCities]);
 
@@ -123,81 +92,73 @@ export default function CustomersPage() {
   };
 
   const handleRemoveFilter = (filter: string) => {
-    setActiveFilters(activeFilters.filter((f) => f !== filter));
-
-    // Also update the underlying filter state
     if (filter.startsWith("Status:")) {
-      const status = filter.replace("Status: ", "");
-      setSelectedStatus(selectedStatus.filter((s) => s !== status));
+      const s = filter.replace("Status: ", "");
+      setSelectedStatus(selectedStatus.filter((x) => x !== s));
     } else if (filter.startsWith("City:")) {
-      const city = filter.replace("City: ", "");
-      setSelectedCities(selectedCities.filter((c) => c !== city));
+      const c = filter.replace("City: ", "");
+      setSelectedCities(selectedCities.filter((x) => x !== c));
     }
   };
 
-  const handleExport = () => {
-    console.log("Exporting customers to CSV...");
-    // Implement CSV export logic
-  };
-
   return (
-    <div className="space-t-6">
+    <div className="space-t-6 ">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">
         <CustomerStatsCard
           icon={Users}
-          value={15}
+          value={stats?.totalCustomers ?? 0}
           label="Total Customers"
           variant="default"
+          loading={isLoading}
         />
-
         <CustomerStatsCard
           icon={UserPlus}
-          value={0}
+          value={stats?.newToday ?? 0}
           label="New Today"
           variant="default"
+          loading={isLoading}
         />
-
         <CustomerStatsCard
           icon={TrendingUp}
-          value={0}
+          value={stats?.joinedLast7Days ?? 0}
           label="Joined Last 7 Days"
           variant="default"
+          loading={isLoading}
         />
-
         <CustomerStatsCard
           icon={TrendingUp}
-          value={0}
+          value={stats?.joinedLast30Days ?? 0}
           label="Joined Last 30 Days"
           variant="default"
+          loading={isLoading}
         />
-
         <CustomerStatsCard
           icon={UserMinus}
-          value={1}
+          value={customers.filter((c) => c.status === "Suspended").length}
           label="Suspended"
-          variant="default"
+          variant="danger"
+          loading={isLoading}
         />
-
         <CustomerStatsCard
           icon={ShoppingCart}
-          value={0}
+          value={stats?.noPurchases ?? 0}
           label="No Purchases Yet"
-          variant="default"
+          variant="muted"
+          loading={isLoading}
         />
       </div>
 
       {/* Customers Table */}
-      <div className=" overflow-hidden">
+      <div className="overflow-hidden">
         <FilterBar
           showFilters={showFilters}
           activeFilters={activeFilters}
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
-          onExport={handleExport}
+          onExport={() => {}}
         />
 
-        {/* Filters Panel */}
         {showFilters && (
           <CustomersFilterPanel
             selectedStatus={selectedStatus}
@@ -209,8 +170,8 @@ export default function CustomersPage() {
             onClear={handleClearFilters}
           />
         )}
-        {/* Table */}
-        <CustomersTable customers={customersData} />
+
+        <CustomersTable customers={customers} loading={isLoading} />
       </div>
     </div>
   );

@@ -21,9 +21,10 @@ export interface Customer {
 
 interface CustomersTableProps {
   customers: Customer[];
+  loading?: boolean;
 }
 
-export default function CustomersTable({ customers }: CustomersTableProps) {
+export default function CustomersTable({ customers, loading = false }: CustomersTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
@@ -102,7 +103,17 @@ export default function CustomersTable({ customers }: CustomersTableProps) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {customers.map((customer) => (
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 8 }).map((_, j) => (
+                    <td key={j} className="px-6 py-5">
+                      <div className="h-4 bg-gray-100 animate-pulse rounded" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            : customers.map((customer) => (
             <tr
               key={customer.id}
               className="hover:bg-[#f9fafb] transition-colors cursor-pointer"
@@ -212,6 +223,7 @@ export default function CustomersTable({ customers }: CustomersTableProps) {
                 {/* Action Menu */}
                 {openMenuId === customer.id && (
                   <CustomerActionMenu
+                    customerId={customer.id}
                     customerName={customer.name}
                     customerStatus={customer.status}
                     onClose={() => setOpenMenuId(null)}

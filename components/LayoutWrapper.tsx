@@ -12,7 +12,13 @@ export default function LayoutWrapper({
   const pathname = usePathname();
 
   // Pages that should NOT show sidebar and header
-  const excludedPaths = ["/", "/logout", "/login", "/forgot-password", "/reset-password"];
+  const excludedPaths = [
+    "/",
+    "/logout",
+    "/login",
+    "/forgot-password",
+    "/reset-password",
+  ];
   const shouldShowLayout = !excludedPaths.includes(pathname);
 
   if (!shouldShowLayout) {
@@ -20,19 +26,19 @@ export default function LayoutWrapper({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#fafafa]">
+    <div className="flex h-full bg-[#fafafa]">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 ml-[108px] flex flex-col h-screen">
+      <div className="flex-1 ml-[108px] flex flex-col min-h-0">
         {/* Header */}
         <div className="sticky top-0 z-30">
           <Header />
         </div>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 pt-6">{children}</main>
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 pt-6">{children}</main>
       </div>
     </div>
   );

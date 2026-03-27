@@ -4,8 +4,16 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X, CreditCard, FileText, ChevronDown, Check } from "@/lib/icons";
 import { Mail, CheckCircle, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useMessageCustomer,
+  useCreditCustomerWallet,
+  useAddCustomerNote,
+  useUpdateCustomerStatus,
+} from "@/lib/hooks/customers";
 
 interface ModalProps {
+  customerId: string;
   customerName: string;
   onClose: () => void;
 }
@@ -38,9 +46,20 @@ function ModalShell({
 }
 
 /* ─── 1. Send Email Modal ─── */
-export function SendEmailModal({ customerName, onClose }: ModalProps) {
+export function SendEmailModal({ customerId, customerName, onClose }: ModalProps) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const { mutate: sendMessage, isPending } = useMessageCustomer(customerId);
+
+  const handleSend = () => {
+    sendMessage(
+      { subject, message },
+      {
+        onSuccess: (res: any) => { toast.success(res.data.message); onClose(); },
+        onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to send email."),
+      }
+    );
+  };
 
   return (
     <ModalShell onClose={onClose}>
@@ -108,10 +127,11 @@ export function SendEmailModal({ customerName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!subject || !message}
+          onClick={handleSend}
+          disabled={!subject || !message || isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send Email
+          {isPending ? "Sending..." : "Send Email"}
         </button>
       </div>
     </ModalShell>
@@ -127,11 +147,22 @@ const creditReasons = [
   "Other",
 ];
 
-export function IssueCreditModal({ customerName, onClose }: ModalProps) {
+export function IssueCreditModal({ customerId, customerName, onClose }: ModalProps) {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [reasonOpen, setReasonOpen] = useState(false);
+  const { mutate: creditWallet, isPending } = useCreditCustomerWallet(customerId);
+
+  const handleCredit = () => {
+    creditWallet(
+      { amount: Number(amount), reason, note: note || undefined },
+      {
+        onSuccess: (res: any) => { toast.success(res.data.message); onClose(); },
+        onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to issue credit."),
+      }
+    );
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -245,10 +276,11 @@ export function IssueCreditModal({ customerName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!amount || !reason}
+          onClick={handleCredit}
+          disabled={!amount || !reason || isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Issue Credit
+          {isPending ? "Processing..." : "Issue Credit"}
         </button>
       </div>
     </ModalShell>
@@ -258,8 +290,16 @@ export function IssueCreditModal({ customerName, onClose }: ModalProps) {
 /* ─── 3. Add Internal Note Modal ─── */
 const MAX_NOTE = 500;
 
-export function AddNoteModal({ customerName, onClose }: ModalProps) {
+export function AddNoteModal({ customerId, customerName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
+  const { mutate: addNote, isPending } = useAddCustomerNote(customerId);
+
+  const handleAdd = () => {
+    addNote(note, {
+      onSuccess: (res: any) => { toast.success(res.data.message); onClose(); },
+      onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to add note."),
+    });
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -315,10 +355,11 @@ export function AddNoteModal({ customerName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          disabled={!note.trim()}
+          onClick={handleAdd}
+          disabled={!note.trim() || isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add Note
+          {isPending ? "Saving..." : "Add Note"}
         </button>
       </div>
     </ModalShell>
@@ -326,9 +367,17 @@ export function AddNoteModal({ customerName, onClose }: ModalProps) {
 }
 
 /* ─── 4. Suspend User Modal ─── */
-export function SuspendUserModal({ customerName, onClose }: ModalProps) {
+export function SuspendUserModal({ customerId, customerName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
+  const { mutate: updateStatus, isPending } = useUpdateCustomerStatus(customerId);
+
+  const handleSuspend = () => {
+    updateStatus("suspend", {
+      onSuccess: (res: any) => { toast.success(res.data.message); onClose(); },
+      onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to suspend account."),
+    });
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -409,8 +458,12 @@ export function SuspendUserModal({ customerName, onClose }: ModalProps) {
         >
           Cancel
         </button>
-        <button className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors">
-          Suspend Account
+        <button
+          onClick={handleSuspend}
+          disabled={isPending}
+          className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? "Suspending..." : "Suspend Account"}
         </button>
       </div>
     </ModalShell>
@@ -418,9 +471,17 @@ export function SuspendUserModal({ customerName, onClose }: ModalProps) {
 }
 
 /* ─── 5. Reactivate Account Modal ─── */
-export function ReactivateModal({ customerName, onClose }: ModalProps) {
+export function ReactivateModal({ customerId, customerName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
+  const { mutate: updateStatus, isPending } = useUpdateCustomerStatus(customerId);
+
+  const handleReactivate = () => {
+    updateStatus("activate", {
+      onSuccess: (res: any) => { toast.success(res.data.message); onClose(); },
+      onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to reactivate account."),
+    });
+  };
 
   return (
     <ModalShell onClose={onClose} width="w-[520px]">
@@ -504,8 +565,12 @@ export function ReactivateModal({ customerName, onClose }: ModalProps) {
         >
           Cancel
         </button>
-        <button className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors">
-          Reactivate Account
+        <button
+          onClick={handleReactivate}
+          disabled={isPending}
+          className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? "Reactivating..." : "Reactivate Account"}
         </button>
       </div>
     </ModalShell>
