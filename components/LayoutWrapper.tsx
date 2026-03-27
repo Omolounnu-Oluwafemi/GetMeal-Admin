@@ -12,7 +12,7 @@ export default function LayoutWrapper({
   const pathname = usePathname();
 
   // Pages that should NOT show sidebar and header
-  const excludedPaths = ["/", "/logout", "/login", "/forgot-password"];
+  const excludedPaths = ["/", "/logout", "/login", "/forgot-password", "/reset-password"];
   const shouldShowLayout = !excludedPaths.includes(pathname);
 
   if (!shouldShowLayout) {
