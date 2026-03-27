@@ -24,6 +24,29 @@ export interface Cook {
   rating: number;
   ratingNumber: number;
   orders: number;
+  joinedDate: string;
+  phone: string;
+  email: string;
+  nextCookingDay: string;
+  schedule: string;
+  onTimeRate: string;
+  avgPrepTime: string;
+  cancelRate: string;
+  mealsListed: number;
+  topMeal: { name: string; orders: number };
+  totalEarnings: string;
+  lastPayoutAmount: string;
+  lastPayoutDate: string;
+  lastPayoutMethod?: string;
+  lastPayoutRef?: string;
+  complaint?: { text: string; date: string };
+  lastReview?: {
+    reviewer: string;
+    rating: number;
+    timeAgo: string;
+    text: string;
+    meal: string;
+  };
   status: "Online" | "Not Active" | "Suspended";
 }
 
@@ -187,7 +210,7 @@ export default function CooksTable({ cooks }: CooksTableProps) {
                     cook.verified === "Verified"
                       ? "text-[#219e02]"
                       : cook.verified === "Pending"
-                        ? "text-[#EF4444]"
+                        ? "text-[#F59E0B]"
                         : "bg-gray-100 text-gray-600"
                   }`}
                 >
@@ -238,12 +261,10 @@ export default function CooksTable({ cooks }: CooksTableProps) {
                   <MoreVertical className="w-5 h-5 text-gray-400" />
                 </button>
 
-                {/* Action Menu */}
+                {/* Action Mexnu */}
                 {openMenuId === cook.id && (
                   <CookActionMenu
-                    cookId={cook.id}
-                    cookName={cook.name}
-                    status={cook.status}
+                    cook={cook}
                     onClose={() => setOpenMenuId(null)}
                   />
                 )}
