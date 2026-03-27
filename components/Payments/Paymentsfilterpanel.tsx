@@ -12,7 +12,7 @@ interface PaymentsFilterPanelProps {
   onClear: () => void;
 }
 
-const paymentStatuses = ["Paid", "Pending", "Failed"];
+const paymentStatuses = ["Paid", "Pending", "Failed", "Refunded"];
 const paymentMethods = ["Paystack", "OPay", "Apple Pay", "Google Pay"];
 
 const sortOptions = [

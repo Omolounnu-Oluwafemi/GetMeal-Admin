@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { Search, Bell, Megaphone } from "@/lib/icons";
 import BroadcastModal from "./BroadcastModal";
@@ -9,6 +9,8 @@ import DateFilterDropdown from "./DateFilterDropdown";
 import ZoneFilterDropdown from "./ZoneFilterDropdown";
 import LinkedFilterDropdown from "./LinkedFilterDropdown";
 import OrdersHeaderFilters from "./OrdersHeaderFilters";
+import GlobalSearchDropdown from "./GlobalSearchDropdown";
+import { useSearch } from "@/lib/hooks/search";
 
 const TITLE_MAP: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -23,8 +25,47 @@ const TITLE_MAP: Record<string, string> = {
 export default function Header() {
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const pathname = usePathname();
   const title = TITLE_MAP[pathname] ?? "Dashboard";
+
+  // Debounce search input by 350ms
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchInput), 350);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const { data: searchResults, isLoading: searchLoading } = useSearch(debouncedQuery);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+    setShowResults(true);
+  };
+
+  const handleSearchClose = () => {
+    setShowResults(false);
+    setSearchInput("");
+    setDebouncedQuery("");
+  };
+
+  const handleSearchFocus = () => {
+    if (searchInput.trim().length >= 2) setShowResults(true);
+  };
 
   const renderFilters = () => {
     if (pathname === "/dashboard") {
@@ -47,6 +88,8 @@ export default function Header() {
     return null;
   };
 
+  const showDropdown = showResults && debouncedQuery.trim().length >= 2;
+
   return (
     <>
       <header className="h-[95px] bg-white border-b-2 border-[#F3F4F6] flex items-center justify-between px-8">
@@ -57,15 +100,27 @@ export default function Header() {
         </div>
 
         {/* Right: Search, Broadcast, Notifications */}
-        <div className="flex items-center gap-4 ">
+        <div className="flex items-center gap-4">
           {/* Search Bar */}
-          <div className="relative w-[400px]">
+          <div ref={searchRef} className="relative w-[400px]">
             <input
               type="text"
+              value={searchInput}
+              onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
               placeholder="Search by name, phone, email, or order ID..."
               className="w-full pl-6 pr-12 py-3.5 bg-[#f7f7f7] border border-[#E5E7EB] rounded-full text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#209d01] focus:ring-2 focus:ring-[#209d01]/20 transition-all"
             />
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[#9CA3AF]" />
+
+            {showDropdown && (
+              <GlobalSearchDropdown
+                results={searchResults}
+                isLoading={searchLoading}
+                query={debouncedQuery}
+                onClose={handleSearchClose}
+              />
+            )}
           </div>
 
           {/* Send Broadcast Button */}
@@ -90,12 +145,10 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Broadcast Modal */}
       {showBroadcast && (
         <BroadcastModal onClose={() => setShowBroadcast(false)} />
       )}
 
-      {/* Notifications Dropdown */}
       {showNotifications && (
         <NotificationsDropdown onClose={() => setShowNotifications(false)} />
       )}

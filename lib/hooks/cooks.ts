@@ -89,6 +89,18 @@ export function useCooks(filters: CooksFilters) {
   });
 }
 
+export function useCookById(cookId: string | null) {
+  return useQuery<ApiCook>({
+    queryKey: ["cook", cookId],
+    queryFn: async () => {
+      const res = await api.get(`/api/admin/cooks/${cookId}`);
+      return res.data.cook ?? res.data;
+    },
+    enabled: !!cookId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useMessageCook(cookId: string) {
   return useMutation({
     mutationFn: (data: { subject: string; message: string }) =>

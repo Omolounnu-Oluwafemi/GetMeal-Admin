@@ -42,6 +42,18 @@ const SORT_MAP: Record<string, string> = {
   "last-active": "lastActive",
 };
 
+export function useCustomerById(customerId: string | null) {
+  return useQuery<ApiCustomer>({
+    queryKey: ["customer", customerId],
+    queryFn: async () => {
+      const res = await api.get(`/api/admin/customers/${customerId}`);
+      return res.data.customer ?? res.data;
+    },
+    enabled: !!customerId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useCustomers(filters: CustomerFilters = {}) {
   return useQuery<CustomersResponse>({
     queryKey: ["customers", filters],

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   ChefHat,
   ShoppingCart,
@@ -13,26 +14,22 @@ import CookStatsCard from "@/components/Cooks/Cookstatscard";
 import FilterBar from "@/components/Filterbar";
 import CooksFilterPanel from "@/components/Cooks/Cooksfilterpanel";
 import CooksTable, { Cook } from "@/components/Cooks/Cookstable";
-import { useCookStats, useCooks, ApiCook } from "@/lib/hooks/cooks";
+import CookProfileSidebar from "@/components/Cooks/CookProfileSidebar";
+import {
+  SendEmailModal,
+  AddNoteModal,
+  SuspendCookModal,
+  ReactivateCookModal,
+} from "@/components/Cooks/CookModals";
+import { useCookStats, useCooks, useCookById, ApiCook } from "@/lib/hooks/cooks";
 
 const AVATAR_COLORS = [
-  "#8B4513",
-  "#9333EA",
-  "#219e02",
-  "#2563EB",
-  "#DC2626",
-  "#D97706",
-  "#0891B2",
-  "#7C3AED",
+  "#8B4513", "#9333EA", "#219e02", "#2563EB",
+  "#DC2626", "#D97706", "#0891B2", "#7C3AED",
 ];
 
 function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 }
 
 function getAvatarColor(id: string) {
@@ -48,11 +45,8 @@ function formatNaira(value: number): string {
 
 function mapCook(c: ApiCook): Cook {
   let status: "Online" | "Not Active" | "Suspended" = "Not Active";
-  if (c.status === "suspended") {
-    status = "Suspended";
-  } else if (c.isAvailable) {
-    status = "Online";
-  }
+  if (c.status === "suspended") status = "Suspended";
+  else if (c.isAvailable) status = "Online";
 
   return {
     id: c.cookId,
@@ -85,12 +79,62 @@ function mapCook(c: ApiCook): Cook {
   };
 }
 
-export default function CooksPage() {
+type ProfileModal = "message" | "add-note" | "suspend" | "reactivate" | null;
+
+function DirectCookProfile({ cookId, onClose }: { cookId: string; onClose: () => void }) {
+  const { data } = useCookById(cookId);
+  const [activeModal, setActiveModal] = useState<ProfileModal>(null);
+
+  if (!data) return null;
+  const cook = mapCook(data);
+
+  const closeModal = () => setActiveModal(null);
+
+  return (
+    <>
+      <CookProfileSidebar
+        cook={cook}
+        onClose={onClose}
+        onMessage={() => setActiveModal("message")}
+        onAddNote={() => setActiveModal("add-note")}
+        onSuspend={() => setActiveModal("suspend")}
+        onReactivate={() => setActiveModal("reactivate")}
+      />
+      {activeModal === "message" && (
+        <SendEmailModal cookId={cookId} cookName={cook.name} onClose={closeModal} />
+      )}
+      {activeModal === "add-note" && (
+        <AddNoteModal cookId={cookId} cookName={cook.name} onClose={closeModal} />
+      )}
+      {activeModal === "suspend" && (
+        <SuspendCookModal cookId={cookId} cookName={cook.name} onClose={closeModal} />
+      )}
+      {activeModal === "reactivate" && (
+        <ReactivateCookModal cookId={cookId} cookName={cook.name} onClose={closeModal} />
+      )}
+    </>
+  );
+}
+
+function CooksPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [openProfileId, setOpenProfileId] = useState<string | null>(null);
+
+  const profileParam = searchParams.get("openProfile");
+  useEffect(() => {
+    if (profileParam) setOpenProfileId(profileParam);
+  }, [profileParam]);
+
+  const handleCloseProfile = () => {
+    setOpenProfileId(null);
+    router.replace("/cooks", { scroll: false });
+  };
 
   const { data: statsData, isLoading: statsLoading } = useCookStats();
   const { data: cooksData, isLoading: cooksLoading } = useCooks({
@@ -128,58 +172,15 @@ export default function CooksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-5">
-        <CookStatsCard
-          icon={ChefHat}
-          value={stats?.activeCooks ?? 0}
-          label="Active Cooks"
-          variant="default"
-          loading={statsLoading}
-        />
-
-        <CookStatsCard
-          icon={ShoppingCart}
-          value={stats?.totalOrders ?? 0}
-          label="Total Orders Today"
-          variant="default"
-          loading={statsLoading}
-        />
-
-        <CookStatsCard
-          icon={DollarSign}
-          value={stats ? formatNaira(stats.amountToday) : "—"}
-          label="Amount Today"
-          variant="default"
-          loading={statsLoading}
-        />
-
-        <CookStatsCard
-          icon={XCircle}
-          value={stats?.cancellations ?? 0}
-          label="Cancellations Today"
-          variant="default"
-          loading={statsLoading}
-        />
-
-        <CookStatsCard
-          icon={RefreshCw}
-          value={stats?.refunds ?? 0}
-          label="Refunds Today"
-          variant="default"
-          loading={statsLoading}
-        />
-
-        <CookStatsCard
-          icon={TrendingUp}
-          value={stats ? formatNaira(stats.GMV) : "—"}
-          label="GMV"
-          variant="default"
-          loading={statsLoading}
-        />
+        <CookStatsCard icon={ChefHat} value={stats?.activeCooks ?? 0} label="Active Cooks" variant="default" loading={statsLoading} />
+        <CookStatsCard icon={ShoppingCart} value={stats?.totalOrders ?? 0} label="Total Orders Today" variant="default" loading={statsLoading} />
+        <CookStatsCard icon={DollarSign} value={stats ? formatNaira(stats.amountToday) : "—"} label="Amount Today" variant="default" loading={statsLoading} />
+        <CookStatsCard icon={XCircle} value={stats?.cancellations ?? 0} label="Cancellations Today" variant="default" loading={statsLoading} />
+        <CookStatsCard icon={RefreshCw} value={stats?.refunds ?? 0} label="Refunds Today" variant="default" loading={statsLoading} />
+        <CookStatsCard icon={TrendingUp} value={stats ? formatNaira(stats.GMV) : "—"} label="GMV" variant="default" loading={statsLoading} />
       </div>
 
-      {/* Cooks Table */}
       <div className="overflow-hidden">
         <FilterBar
           showFilters={showFilters}
@@ -188,7 +189,6 @@ export default function CooksPage() {
           onRemoveFilter={handleRemoveFilter}
           onExport={() => {}}
         />
-
         {showFilters && (
           <CooksFilterPanel
             selectedStatus={selectedStatus}
@@ -200,9 +200,20 @@ export default function CooksPage() {
             onClear={handleClearFilters}
           />
         )}
-
         <CooksTable cooks={cooks} loading={cooksLoading} />
       </div>
+
+      {openProfileId && (
+        <DirectCookProfile cookId={openProfileId} onClose={handleCloseProfile} />
+      )}
     </div>
+  );
+}
+
+export default function CooksPage() {
+  return (
+    <Suspense>
+      <CooksPageContent />
+    </Suspense>
   );
 }

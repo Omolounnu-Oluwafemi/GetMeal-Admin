@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Users,
   UserPlus,
@@ -14,7 +15,14 @@ import CustomersFilterPanel from "@/components/Customers/Customersfilterpanel";
 import CustomersTable, {
   Customer,
 } from "@/components/Customers/Customerstable";
-import { useCustomers, ApiCustomer } from "@/lib/hooks/customers";
+import CustomerProfileSidebar from "@/components/Customers/CustomerProfileSidebar";
+import {
+  SendEmailModal,
+  AddNoteModal,
+  SuspendUserModal,
+  ReactivateModal,
+} from "@/components/Customers/CustomerModals";
+import { useCustomers, useCustomerById, ApiCustomer } from "@/lib/hooks/customers";
 
 const AVATAR_COLORS = [
   "#8B4513",
@@ -61,8 +69,57 @@ function mapCustomer(c: ApiCustomer): Customer {
   };
 }
 
-export default function CustomersPage() {
+type CustomerModal = "message" | "add-note" | "suspend" | "reactivate" | null;
+
+function DirectCustomerProfile({ customerId, onClose }: { customerId: string; onClose: () => void }) {
+  const { data } = useCustomerById(customerId);
+  const [activeModal, setActiveModal] = useState<CustomerModal>(null);
+
+  if (!data) return null;
+  const customer = mapCustomer(data);
+  const closeModal = () => setActiveModal(null);
+
+  return (
+    <>
+      <CustomerProfileSidebar
+        customer={customer}
+        onClose={onClose}
+        onMessage={() => setActiveModal("message")}
+        onAddNote={() => setActiveModal("add-note")}
+        onSuspend={() => setActiveModal("suspend")}
+        onReactivate={() => setActiveModal("reactivate")}
+      />
+      {activeModal === "message" && (
+        <SendEmailModal customerId={customerId} customerName={customer.name} onClose={closeModal} />
+      )}
+      {activeModal === "add-note" && (
+        <AddNoteModal customerId={customerId} customerName={customer.name} onClose={closeModal} />
+      )}
+      {activeModal === "suspend" && (
+        <SuspendUserModal customerId={customerId} customerName={customer.name} onClose={closeModal} />
+      )}
+      {activeModal === "reactivate" && (
+        <ReactivateModal customerId={customerId} customerName={customer.name} onClose={closeModal} />
+      )}
+    </>
+  );
+}
+
+function CustomersPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
+  const [openProfileId, setOpenProfileId] = useState<string | null>(null);
+
+  const profileParam = searchParams.get("openProfile");
+  useEffect(() => {
+    if (profileParam) setOpenProfileId(profileParam);
+  }, [profileParam]);
+
+  const handleCloseProfile = () => {
+    setOpenProfileId(null);
+    router.replace("/customers", { scroll: false });
+  };
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
@@ -173,6 +230,18 @@ export default function CustomersPage() {
 
         <CustomersTable customers={customers} loading={isLoading} />
       </div>
+
+      {openProfileId && (
+        <DirectCustomerProfile customerId={openProfileId} onClose={handleCloseProfile} />
+      )}
     </div>
+  );
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense>
+      <CustomersPageContent />
+    </Suspense>
   );
 }

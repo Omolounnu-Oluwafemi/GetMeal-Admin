@@ -6,10 +6,11 @@ interface PaymentStatCardProps {
   label: string;
   value: string | number;
   change: {
-    value: number;
+    value: number | string;
     isPositive: boolean;
   };
   isOrders?: boolean;
+  loading?: boolean;
 }
 
 export default function PaymentStatCard({
@@ -17,6 +18,7 @@ export default function PaymentStatCard({
   value,
   change,
   isOrders,
+  loading = false,
 }: PaymentStatCardProps) {
   return (
     <div className="bg-white rounded-[20px] p-6 border border-[#dddfe2] hover:shadow-md transition-shadow">
@@ -27,7 +29,7 @@ export default function PaymentStatCard({
 
         {/* Value */}
         <div className="text-[24px] font-bold text-[#111827] leading-none">
-          {value}
+          {loading ? <div className="h-7 w-20 bg-gray-200 rounded animate-pulse" /> : value}
         </div>
 
         {isOrders ? (
