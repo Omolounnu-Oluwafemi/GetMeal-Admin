@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Check, MoreVertical } from "@/lib/icons";
 import CustomerActionMenu from "@/components/Customers/Customeractionmenu";
+import Pagination from "@/components/Pagination";
+
+const PAGE_SIZE = 10;
 
 export interface Customer {
   id: string;
@@ -27,10 +30,14 @@ interface CustomersTableProps {
 export default function CustomersTable({ customers, loading = false }: CustomersTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.ceil(customers.length / PAGE_SIZE);
+  const pagedCustomers = customers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCustomers(customers.map((c) => c.id));
+      setSelectedCustomers(pagedCustomers.map((c) => c.id));
     } else {
       setSelectedCustomers([]);
     }
@@ -52,6 +59,14 @@ export default function CustomersTable({ customers, loading = false }: Customers
 
   return (
     <div className="overflow-x-auto mt-6 border rounded-2xl">
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={customers.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        label="customers"
+      />
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -60,8 +75,8 @@ export default function CustomersTable({ customers, loading = false }: Customers
                 <input
                   type="checkbox"
                   checked={
-                    selectedCustomers.length === customers.length &&
-                    customers.length > 0
+                    pagedCustomers.length > 0 &&
+                    pagedCustomers.every((c) => selectedCustomers.includes(c.id))
                   }
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   className="peer sr-only "
@@ -113,7 +128,7 @@ export default function CustomersTable({ customers, loading = false }: Customers
                   ))}
                 </tr>
               ))
-            : customers.map((customer) => (
+            : pagedCustomers.map((customer) => (
             <tr
               key={customer.id}
               className="hover:bg-[#f9fafb] transition-colors cursor-pointer"

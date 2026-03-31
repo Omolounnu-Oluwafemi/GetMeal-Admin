@@ -8,6 +8,7 @@ import PaymentStatCard from "@/components/Payments/PaymentStatsCard";
 import { useQueries } from "@tanstack/react-query";
 import { usePayments, usePaymentStats, ApiPayment } from "@/lib/hooks/payments";
 import api from "@/lib/api";
+import PageLoader from "@/components/PageLoader";
 
 const AVATAR_COLORS = [
   "#8B4513", "#9333EA", "#219e02", "#2563EB",
@@ -81,6 +82,15 @@ export default function PaymentsPage() {
     })),
   });
 
+  useEffect(() => {
+    const filters: string[] = [];
+    if (selectedStatus) filters.push(`Status: ${selectedStatus}`);
+    if (selectedMethod) filters.push(`Method: ${selectedMethod}`);
+    setActiveFilters(filters);
+  }, [selectedStatus, selectedMethod]);
+
+  if (statsLoading || paymentsLoading) return <PageLoader />;
+
   const cookMap: Record<string, string> = Object.fromEntries(
     cookIds.map((id, i) => [id, cookQueries[i]?.data?.name ?? "—"]),
   );
@@ -88,13 +98,6 @@ export default function PaymentsPage() {
   const payments: Payment[] = (paymentsData ?? []).map((p) =>
     mapPayment(p, cookMap),
   );
-
-  useEffect(() => {
-    const filters: string[] = [];
-    if (selectedStatus) filters.push(`Status: ${selectedStatus}`);
-    if (selectedMethod) filters.push(`Method: ${selectedMethod}`);
-    setActiveFilters(filters);
-  }, [selectedStatus, selectedMethod]);
 
   const handleClearFilters = () => {
     setSelectedStatus(null);

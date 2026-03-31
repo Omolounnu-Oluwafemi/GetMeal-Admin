@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Pagination from "@/components/Pagination";
+
+const PAGE_SIZE = 10;
 
 import {
   MoreVertical,
@@ -58,10 +61,14 @@ interface CooksTableProps {
 export default function CooksTable({ cooks, loading = false }: CooksTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedCooks, setSelectedCooks] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.ceil(cooks.length / PAGE_SIZE);
+  const pagedCooks = cooks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCooks(cooks.map((c) => c.id));
+      setSelectedCooks(pagedCooks.map((c) => c.id));
     } else {
       setSelectedCooks([]);
     }
@@ -87,6 +94,14 @@ export default function CooksTable({ cooks, loading = false }: CooksTableProps) 
 
   return (
     <div className="overflow-x-auto mt-6 border rounded-2xl ">
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={cooks.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        label="cooks"
+      />
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -95,7 +110,8 @@ export default function CooksTable({ cooks, loading = false }: CooksTableProps) 
                 <input
                   type="checkbox"
                   checked={
-                    selectedCooks.length === cooks.length && cooks.length > 0
+                    pagedCooks.length > 0 &&
+                    pagedCooks.every((c) => selectedCooks.includes(c.id))
                   }
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   className="peer sr-only"
@@ -154,7 +170,7 @@ export default function CooksTable({ cooks, loading = false }: CooksTableProps) 
                 <td className="px-6 py-4"><div className="h-4 w-4 bg-gray-200 rounded" /></td>
               </tr>
             ))
-          ) : cooks.map((cook) => (
+          ) : pagedCooks.map((cook) => (
             <tr key={cook.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-8">
                 <label className="flex items-center cursor-pointer">

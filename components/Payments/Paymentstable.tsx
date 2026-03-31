@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Check, MoreVertical } from "@/lib/icons";
+import Pagination from "@/components/Pagination";
+
+const PAGE_SIZE = 10;
 import { toast } from "sonner";
 import { useRefundPayment } from "@/lib/hooks/payments";
 
@@ -99,9 +102,13 @@ function RefundButton({ paymentId, onClose }: { paymentId: string; onClose: () =
 export default function PaymentsTable({ payments, loading = false }: PaymentsTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.ceil(payments.length / PAGE_SIZE);
+  const pagedPayments = payments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSelectAll = (checked: boolean) => {
-    setSelectedPayments(checked ? payments.map((p) => p.id) : []);
+    setSelectedPayments(checked ? pagedPayments.map((p) => p.id) : []);
   };
 
   const handleSelectPayment = (paymentId: string, checked: boolean) => {
@@ -114,6 +121,14 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
 
   return (
     <div className="overflow-x-auto mt-6 border rounded-2xl">
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={payments.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        label="payments"
+      />
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -156,7 +171,7 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
               </tr>
             ))
           ) : (
-            payments.map((payment) => (
+            pagedPayments.map((payment) => (
               <tr key={payment.id} className="hover:bg-[#f9fafb] transition-colors">
                 <td className="px-6 py-8">
                   <label className="flex items-center cursor-pointer">

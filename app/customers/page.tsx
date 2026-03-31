@@ -23,6 +23,7 @@ import {
   ReactivateModal,
 } from "@/components/Customers/CustomerModals";
 import { useCustomers, useCustomerById, ApiCustomer } from "@/lib/hooks/customers";
+import PageLoader from "@/components/PageLoader";
 
 const AVATAR_COLORS = [
   "#8B4513",
@@ -125,21 +126,23 @@ function CustomersPageContent() {
   const [sortBy, setSortBy] = useState("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  const { data, isLoading } = useCustomers({
-    status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
-    city: selectedCities[0],
-    sortBy,
-  });
-
-  const stats = data?.stats;
-  const customers: Customer[] = (data?.customers ?? []).map(mapCustomer);
-
   useEffect(() => {
     const filters: string[] = [];
     selectedStatus.forEach((s) => filters.push(`Status: ${s}`));
     selectedCities.forEach((c) => filters.push(`City: ${c}`));
     setActiveFilters(filters);
   }, [selectedStatus, selectedCities]);
+
+  const { data, isLoading } = useCustomers({
+    status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
+    city: selectedCities[0],
+    sortBy,
+  });
+
+  if (isLoading) return <PageLoader />;
+
+  const stats = data?.stats;
+  const customers: Customer[] = (data?.customers ?? []).map(mapCustomer);
 
   const handleClearFilters = () => {
     setSelectedStatus([]);

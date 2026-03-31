@@ -89,22 +89,40 @@ const CustomFulfillmentTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function OrdersChart({ chartData, fulfillmentTime, loading }: Props) {
-  const [activeTab, setActiveTab] = useState<"volume" | "fulfillment">("volume");
+export default function OrdersChart({
+  chartData,
+  fulfillmentTime,
+  loading,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<"volume" | "fulfillment">(
+    "volume",
+  );
 
   const volumeData = transformChartData(chartData);
-  const fulfillmentData = fulfillmentTime != null
-    ? buildFulfillmentData(chartData, fulfillmentTime)
-    : [];
+
+  const ALL_STATUSES: { key: string; fill: string; label: string }[] = [
+    { key: "delivered", fill: "#219e02", label: "Delivered" },
+    { key: "confirmed", fill: "#34c759", label: "Confirmed" },
+    { key: "picked_up", fill: "#86efac", label: "Picked Up" },
+    { key: "pending", fill: "#f59e0b", label: "Pending" },
+    { key: "cancelled", fill: "#f04343", label: "Cancelled" },
+  ];
+  const activeStatuses = ALL_STATUSES.filter((s) =>
+    volumeData.some((d) => (d[s.key] ?? 0) > 0),
+  );
+  const fulfillmentData =
+    fulfillmentTime != null
+      ? buildFulfillmentData(chartData, fulfillmentTime)
+      : [];
 
   const totalOrders = chartData.reduce(
     (sum, item) => sum + item.data.reduce((s, d) => s + d.count, 0),
-    0
+    0,
   );
   const totalDelivered = chartData.reduce(
     (sum, item) =>
       sum + (item.data.find((d) => d.status === "delivered")?.count ?? 0),
-    0
+    0,
   );
   const completionRate =
     totalOrders > 0 ? ((totalDelivered / totalOrders) * 100).toFixed(1) : "—";
@@ -114,7 +132,7 @@ export default function OrdersChart({ chartData, fulfillmentTime, loading }: Pro
       const total = item.data.reduce((s, d) => s + d.count, 0);
       return total > best.count ? { date: item._id, count: total } : best;
     },
-    { date: "", count: 0 }
+    { date: "", count: 0 },
   );
   const peakLabel = peakDay.date
     ? new Date(peakDay.date).toLocaleDateString("en-GB", {
@@ -136,25 +154,33 @@ export default function OrdersChart({ chartData, fulfillmentTime, loading }: Pro
 
           <div className="flex gap-2 w-[55%]">
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1 text-center">Peak Day</div>
+              <div className="text-xs text-[#9CA3AF] mb-1 text-center">
+                Peak Day
+              </div>
               <div className="text-xs font-bold text-[#111827] text-center">
                 {loading ? "—" : peakLabel}
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1 text-center">Total Orders</div>
+              <div className="text-xs text-[#9CA3AF] mb-1 text-center">
+                Total Orders
+              </div>
               <div className="text-xs font-bold text-[#111827] text-center">
                 {loading ? "—" : totalOrders}
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1 text-center">Completion Rate</div>
+              <div className="text-xs text-[#9CA3AF] mb-1 text-center">
+                Completion Rate
+              </div>
               <div className="text-xs font-bold text-[#10B981] text-center">
                 {loading ? "—" : `${completionRate}%`}
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#9CA3AF] mb-1 text-center">Avg Time</div>
+              <div className="text-xs text-[#9CA3AF] mb-1 text-center">
+                Avg Time
+              </div>
               <div className="text-xs font-bold text-[#111827] text-center">
                 {loading || fulfillmentTime == null
                   ? "—"
@@ -199,42 +225,71 @@ export default function OrdersChart({ chartData, fulfillmentTime, loading }: Pro
           </div>
         ) : activeTab === "volume" ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={volumeData} barGap={2} barCategoryGap="30%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
-              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: "#9CA3AF", fontSize: 12 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CA3AF", fontSize: 12 }} />
-              <Tooltip content={<CustomOrderTooltip />} cursor={{ fill: "transparent" }} />
+            <BarChart data={volumeData} barGap={0} barCategoryGap="5%">
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#E5E7EB"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="time"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9CA3AF", fontSize: 12 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9CA3AF", fontSize: 12 }}
+              />
+              <Tooltip
+                content={<CustomOrderTooltip />}
+                cursor={{ fill: "transparent" }}
+              />
               <Legend
                 wrapperStyle={{ paddingTop: "20px" }}
                 iconType="circle"
                 formatter={(value) => {
-                  const labels: Record<string, string> = {
-                    delivered: "Delivered",
-                    pending: "Pending",
-                    cancelled: "Cancelled",
-                    confirmed: "Confirmed",
-                    picked_up: "Picked Up",
-                  };
-                  return <span className="text-sm text-[#6B7280]">{labels[value] ?? value}</span>;
+                  const label =
+                    activeStatuses.find((s) => s.key === value)?.label ?? value;
+                  return (
+                    <span className="text-sm text-[#6B7280]">{label}</span>
+                  );
                 }}
               />
-              <Bar dataKey="delivered" name="delivered" fill="#219e02" radius={[4, 4, 0, 0]} maxBarSize={20} />
-              <Bar dataKey="confirmed" name="confirmed" fill="#34c759" radius={[4, 4, 0, 0]} maxBarSize={20} />
-              <Bar dataKey="picked_up" name="picked_up" fill="#86efac" radius={[4, 4, 0, 0]} maxBarSize={20} />
-              <Bar dataKey="pending" name="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={20} />
-              <Bar dataKey="cancelled" name="cancelled" fill="#f04343" radius={[4, 4, 0, 0]} maxBarSize={20} />
+              {activeStatuses.map((s) => (
+                <Bar
+                  key={s.key}
+                  dataKey={s.key}
+                  name={s.key}
+                  fill={s.fill}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={40}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={fulfillmentData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: "#9CA3AF", fontSize: 12 }} />
+              <XAxis
+                dataKey="time"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9CA3AF", fontSize: 12 }}
+              />
               <YAxis
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "#9CA3AF", fontSize: 12 }}
-                label={{ value: "Minutes", angle: -90, position: "insideLeft", fill: "#9CA3AF", fontSize: 12 }}
+                label={{
+                  value: "Minutes",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#9CA3AF",
+                  fontSize: 12,
+                }}
               />
               <Tooltip content={<CustomFulfillmentTooltip />} />
               <Legend
@@ -245,11 +300,29 @@ export default function OrdersChart({ chartData, fulfillmentTime, loading }: Pro
                     avgTime: "Avg Fulfillment Time",
                     target: `Target (${TARGET_MINUTES} min)`,
                   };
-                  return <span className="text-sm text-[#6B7280]">{labels[value]}</span>;
+                  return (
+                    <span className="text-sm text-[#6B7280]">
+                      {labels[value]}
+                    </span>
+                  );
                 }}
               />
-              <Line type="monotone" dataKey="avgTime" stroke="#10B981" strokeWidth={3} dot={{ fill: "#10B981", r: 5 }} activeDot={{ r: 7 }} />
-              <Line type="monotone" dataKey="target" stroke="#D1D5DB" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: "#D1D5DB", r: 4 }} />
+              <Line
+                type="monotone"
+                dataKey="avgTime"
+                stroke="#10B981"
+                strokeWidth={3}
+                dot={{ fill: "#10B981", r: 5 }}
+                activeDot={{ r: 7 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="target"
+                stroke="#D1D5DB"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ fill: "#D1D5DB", r: 4 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         )}

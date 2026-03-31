@@ -6,6 +6,7 @@ import Providers from "@/components/Providers";
 export const metadata: Metadata = {
   title: "Getameal Admin Dashboard",
   description: "Admin dashboard for Getameal food delivery platform",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({

@@ -22,6 +22,7 @@ import {
   ReactivateCookModal,
 } from "@/components/Cooks/CookModals";
 import { useCookStats, useCooks, useCookById, ApiCook } from "@/lib/hooks/cooks";
+import PageLoader from "@/components/PageLoader";
 
 const AVATAR_COLORS = [
   "#8B4513", "#9333EA", "#219e02", "#2563EB",
@@ -136,6 +137,13 @@ function CooksPageContent() {
     router.replace("/cooks", { scroll: false });
   };
 
+  useEffect(() => {
+    const filters: string[] = [];
+    selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
+    selectedCities.forEach((city) => filters.push(`City: ${city}`));
+    setActiveFilters(filters);
+  }, [selectedStatus, selectedCities]);
+
   const { data: statsData, isLoading: statsLoading } = useCookStats();
   const { data: cooksData, isLoading: cooksLoading } = useCooks({
     status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
@@ -143,15 +151,10 @@ function CooksPageContent() {
     sortBy,
   });
 
+  if (statsLoading || cooksLoading) return <PageLoader />;
+
   const stats = statsData;
   const cooks: Cook[] = (cooksData ?? []).map(mapCook);
-
-  useEffect(() => {
-    const filters: string[] = [];
-    selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
-    selectedCities.forEach((city) => filters.push(`City: ${city}`));
-    setActiveFilters(filters);
-  }, [selectedStatus, selectedCities]);
 
   const handleClearFilters = () => {
     setSelectedStatus([]);

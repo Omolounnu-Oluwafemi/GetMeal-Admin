@@ -38,7 +38,7 @@ export default function LayoutWrapper({
         </div>
 
         {/* Page Content */}
-        <main className="flex-1 min-h-0 overflow-y-auto p-4 pt-6">{children}</main>
+        <main className="relative flex-1 min-h-0 overflow-y-auto p-4 pt-6">{children}</main>
       </div>
     </div>
   );

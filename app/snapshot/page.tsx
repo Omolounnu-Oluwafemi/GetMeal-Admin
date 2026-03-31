@@ -8,6 +8,7 @@ import AlertsPanel from "@/components/Snapshot/Alertspanel";
 import ZoneActivityList from "@/components/Snapshot/Zoneactivitylist";
 import NudgeCooksModal from "@/components/Snapshot/Nudgecooksmodal";
 import { useSnapshot } from "@/lib/hooks/snapshot";
+import PageLoader from "@/components/PageLoader";
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -39,6 +40,8 @@ export default function SnapshotPage() {
 
   const today = new Date().toISOString().split("T")[0];
   const { data, isLoading } = useSnapshot({ date: today });
+
+  if (isLoading) return <PageLoader />;
 
   const liveOrders = (data?.liveOrders ?? []).map((o, i) => ({
     id: o._id ?? String(i),

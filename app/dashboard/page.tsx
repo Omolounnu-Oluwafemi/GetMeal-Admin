@@ -4,12 +4,17 @@ import StatCard from "@/components/StatCard";
 import OrdersChart from "@/components/OrdersChart";
 import SystemAlerts from "@/components/SystemAlerts";
 import OrdersTable from "@/components/OrderStable";
+import PageLoader from "@/components/PageLoader";
 import {
   useStatsOverview,
   useOrdersChart,
   useFulfillmentStats,
   useSystemAlerts,
 } from "@/lib/hooks/dashboard";
+import { useOrders, useAtRiskOrders, useCancelOrder, useRefundOrder } from "@/lib/hooks/orders";
+import { mapOrder, mapAtRiskOrder } from "@/lib/mappers/orders";
+import { useState } from "react";
+import { toast } from "sonner";
 
 // Default to last 60 days
 const end = new Date().toISOString();
@@ -22,10 +27,43 @@ function formatNaira(value: number) {
 }
 
 export default function DashboardPage() {
+  const [ordersPage, setOrdersPage] = useState(1);
+
   const { data: stats, isLoading: statsLoading } = useStatsOverview(start, end);
   const { data: chartData, isLoading: chartLoading } = useOrdersChart(start, end);
   const { data: fulfillment, isLoading: fulfillmentLoading } = useFulfillmentStats(start, end);
   const { data: alerts, isLoading: alertsLoading } = useSystemAlerts();
+  const { data: ordersData, isLoading: ordersLoading } = useOrders(ordersPage);
+  const { data: atRiskData } = useAtRiskOrders();
+  const cancelOrder = useCancelOrder();
+  const refundOrder = useRefundOrder();
+
+  const isPageLoading = statsLoading || chartLoading || fulfillmentLoading || alertsLoading;
+
+  const orders = (ordersData?.orders ?? []).map(mapOrder);
+  const atRiskOrders = (atRiskData ?? []).map(mapAtRiskOrder);
+
+  const handleCancelOrder = (id: string) => {
+    cancelOrder.mutate(id, {
+      onSuccess: (data) => toast.success(data?.message ?? "Order cancelled successfully"),
+      onError: (err: unknown) => {
+        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to cancel order";
+        toast.error(msg);
+      },
+    });
+  };
+
+  const handleIssueRefund = (id: string) => {
+    refundOrder.mutate(id, {
+      onSuccess: (data) => toast.success(data?.message ?? "Refund issued successfully"),
+      onError: (err: unknown) => {
+        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to issue refund";
+        toast.error(msg);
+      },
+    });
+  };
+
+  if (isPageLoading) return <PageLoader />;
 
   return (
     <div className="space-y-6 mt-[-4]">
@@ -128,7 +166,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <OrdersTable />
+      <OrdersTable
+        orders={orders}
+        atRiskOrders={atRiskOrders}
+        loading={ordersLoading}
+        onCancelOrder={handleCancelOrder}
+        onIssueRefund={handleIssueRefund}
+        page={ordersPage}
+        totalPages={ordersData?.pages ?? 1}
+        total={ordersData?.total ?? 0}
+        pageSize={10}
+        onPageChange={setOrdersPage}
+      />
     </div>
   );
 }

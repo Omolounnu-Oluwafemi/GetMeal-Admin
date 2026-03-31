@@ -7,6 +7,7 @@ interface OrderStatsCardProps {
   value: number;
   label: string;
   variant?: "default" | "success" | "danger" | "warning";
+  loading?: boolean;
 }
 
 export default function OrderStatsCard({
@@ -14,6 +15,7 @@ export default function OrderStatsCard({
   value,
   label,
   variant = "default",
+  loading = false,
 }: OrderStatsCardProps) {
   const bgColors = {
     default: "bg-[#F0FDF4]",
@@ -28,6 +30,16 @@ export default function OrderStatsCard({
     danger: "text-[#EF4444]",
     warning: "text-[#F59E0B]",
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-[20px] p-6 border border-[#F3F4F6] animate-pulse">
+        <div className="w-10 h-10 rounded-full bg-gray-200 mb-3" />
+        <div className="h-8 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-[20px] p-6 border border-[#F3F4F6]">
