@@ -21,6 +21,27 @@ export interface ApiOrderFilter {
   cook: { cookId: string; name: string; email: string; phone: string };
 }
 
+// Shape returned by GET /api/admin/orders/:id
+export interface ApiOrderDetail {
+  _id: string;
+  user: { _id: string; email: string; fullName: string } | null;
+  cook: { _id: string; email: string; fullName: string } | null;
+  totalAmount: number;
+  status: string;
+  paymentStatus: string;
+  deliveryType: string;
+  note?: string | null;
+  mealItems: {
+    mealId: string;
+    name: string;
+    images: { url: string; publicId: string }[];
+    price: number;
+    quantity: number;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiOrder {
   _id: string;
   userId: { _id: string; fullName: string; phone: string } | null;
