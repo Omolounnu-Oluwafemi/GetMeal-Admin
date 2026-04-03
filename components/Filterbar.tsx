@@ -1,7 +1,7 @@
 "use client";
 
-import { Download, ShoppingBag, X } from "@/lib/icons";
-import { SlidersHorizontal } from "lucide-react";
+import { Download, X } from "@/lib/icons";
+import { SlidersHorizontal, Plus } from "lucide-react";
 
 interface FilterBarProps {
   showFilters: boolean;
@@ -9,14 +9,17 @@ interface FilterBarProps {
   onToggleFilters: () => void;
   onRemoveFilter: (filter: string) => void;
   onExport: () => void;
+  onAdd?: () => void;
+  addLabel?: string;
 }
 
 export default function FilterBar({
-  showFilters,
   activeFilters,
   onToggleFilters,
   onRemoveFilter,
   onExport,
+  onAdd,
+  addLabel = "Add",
 }: FilterBarProps) {
   return (
     <div className="mb-1 pt-0 border border-[#F3F4F6]">
@@ -53,14 +56,25 @@ export default function FilterBar({
           ))}
         </div>
 
-        {/* Export Button */}
-        <button
-          onClick={onExport}
-          className="flex items-center gap-2 px-3 py-2 border border-[#e2e2e4] rounded-lg text-sm text-gray-800 hover:border-[#219e02] transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-2">
+          {onAdd && (
+            <button
+              onClick={onAdd}
+              className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white rounded-lg text-sm font-medium hover:bg-[#1a7d01] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {addLabel}
+            </button>
+          )}
+          {/* Export Button */}
+          <button
+            onClick={onExport}
+            className="flex items-center gap-2 px-3 py-2 border border-[#e2e2e4] rounded-lg text-sm text-gray-800 hover:border-[#219e02] transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        </div>
       </div>
     </div>
   );

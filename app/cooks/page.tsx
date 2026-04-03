@@ -23,13 +23,15 @@ import {
 } from "@/components/Cooks/CookModals";
 import { useCookStats, useCooks, useCookById, ApiCook } from "@/lib/hooks/cooks";
 import PageLoader from "@/components/PageLoader";
+import AddCookModal from "@/components/Cooks/AddCookModal";
 
 const AVATAR_COLORS = [
   "#8B4513", "#9333EA", "#219e02", "#2563EB",
   "#DC2626", "#D97706", "#0891B2", "#7C3AED",
 ];
 
-function getInitials(name: string) {
+function getInitials(name?: string) {
+  if (!name) return "?";
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 }
 
@@ -51,11 +53,11 @@ function mapCook(c: ApiCook): Cook {
 
   return {
     id: c.cookId,
-    name: c.name,
+    name: c.name ?? "—",
     initials: getInitials(c.name),
     avatarColor: getAvatarColor(c.cookId),
-    kitchen: `${c.name.split(" ")[0]}'s Kitchen`,
-    city: c.location ?? "—",
+    kitchen: c.name ? `${c.name.split(" ")[0]}'s Kitchen` : "—",
+    city: c.location?.address ?? "—",
     verified: c.isApproved ? "Verified" : "Pending",
     rating: c.rating ?? 0,
     ratingNumber: 0,
@@ -64,8 +66,8 @@ function mapCook(c: ApiCook): Cook {
       month: "short",
       year: "numeric",
     }),
-    phone: c.phone,
-    email: c.email,
+    phone: c.phone ?? "—",
+    email: c.email ?? "—",
     nextCookingDay: "—",
     schedule: "—",
     onTimeRate: "—",
@@ -77,6 +79,8 @@ function mapCook(c: ApiCook): Cook {
     lastPayoutAmount: "—",
     lastPayoutDate: "—",
     status,
+    isAvailable: c.isAvailable,
+    isApproved: c.isApproved,
   };
 }
 
@@ -121,6 +125,7 @@ function CooksPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
+  const [showAddCook, setShowAddCook] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
@@ -191,6 +196,8 @@ function CooksPageContent() {
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
           onExport={() => {}}
+          onAdd={() => setShowAddCook(true)}
+          addLabel="Add Cook"
         />
         {showFilters && (
           <CooksFilterPanel
@@ -205,6 +212,8 @@ function CooksPageContent() {
         )}
         <CooksTable cooks={cooks} loading={cooksLoading} />
       </div>
+
+      {showAddCook && <AddCookModal onClose={() => setShowAddCook(false)} />}
 
       {openProfileId && (
         <DirectCookProfile cookId={openProfileId} onClose={handleCloseProfile} />

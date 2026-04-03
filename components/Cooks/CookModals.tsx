@@ -24,6 +24,7 @@ interface ModalProps {
   cookId: string;
   cookName: string;
   onClose: () => void;
+  isAvailable?: boolean;
 }
 
 /* ─── Shared Backdrop + Panel wrapper ─── */
@@ -183,13 +184,17 @@ export function SendEmailModal({ cookId, cookName, onClose }: ModalProps) {
   );
 }
 
-/* ─── 3. Change Status Modal (set to Active / setActive) ─── */
-export function ChangeStatusModal({ cookId, cookName, onClose }: ModalProps) {
+/* ─── 3. Change Status Modal (setActive / setInactive based on isAvailable) ─── */
+export function ChangeStatusModal({ cookId, cookName, isAvailable = false, onClose }: ModalProps) {
   const { mutate, isPending } = useUpdateCookStatus(cookId);
 
-  const handleSetActive = () => {
+  // If currently active → set inactive; if inactive → set active
+  const settingActive = !isAvailable;
+  const action = settingActive ? "setActive" : "setInactive";
+
+  const handleChange = () => {
     mutate(
-      { action: "setActive" },
+      { action },
       {
         onSuccess: (res: any) => {
           toast.success(res.data.message);
@@ -206,32 +211,32 @@ export function ChangeStatusModal({ cookId, cookName, onClose }: ModalProps) {
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-4">
         <div className="flex items-center gap-3">
-          <Clock className="w-5 h-5 text-[#219e02]" />
+          <Clock className={`w-5 h-5 ${settingActive ? "text-[#219e02]" : "text-orange-500"}`} />
           <div>
             <h2 className="text-base font-bold text-[#111827]">
-              Set {cookName} to Active?
+              Set {cookName} to {settingActive ? "Active" : "Inactive"}?
             </h2>
             <p className="text-xs text-[#6B7280] mt-0.5">
-              This cook will start receiving new orders again.
+              {settingActive
+                ? "This cook will start receiving new orders again."
+                : "This cook will be temporarily unavailable to receive new orders."}
             </p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-        >
+        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <X className="w-4 h-4 text-[#6B7280]" />
         </button>
       </div>
 
       {/* Body */}
       <div className="px-7 pb-6">
-        <div className="flex gap-3 p-4 bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl">
-          <AlertCircle className="w-4 h-4 text-[#219e02] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#219e02] leading-relaxed">
-            <span className="font-semibold">Impact:</span> This cook&apos;s
-            meals will become visible to customers and they can receive new
-            orders.
+        <div className={`flex gap-3 p-4 rounded-xl border ${settingActive ? "bg-[#f0fdf4] border-[#bbf7d0]" : "bg-orange-50 border-orange-200"}`}>
+          <AlertCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${settingActive ? "text-[#219e02]" : "text-orange-500"}`} />
+          <p className={`text-xs leading-relaxed ${settingActive ? "text-[#219e02]" : "text-orange-600"}`}>
+            <span className="font-semibold">Impact:</span>{" "}
+            {settingActive
+              ? "This cook's meals will become visible to customers and they can receive new orders."
+              : "This cook's meals will be hidden from customers until they are set back to active."}
           </p>
         </div>
       </div>
@@ -245,11 +250,11 @@ export function ChangeStatusModal({ cookId, cookName, onClose }: ModalProps) {
           Cancel
         </button>
         <button
-          onClick={handleSetActive}
+          onClick={handleChange}
           disabled={isPending}
-          className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`flex-1 py-3 rounded-xl text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${settingActive ? "bg-[#219e02] hover:bg-[#1a7d01]" : "bg-orange-500 hover:bg-orange-600"}`}
         >
-          {isPending ? "Updating..." : "Set to Active"}
+          {isPending ? "Updating..." : settingActive ? "Set to Active" : "Set to Inactive"}
         </button>
       </div>
     </ModalShell>
@@ -340,13 +345,13 @@ export function AddNoteModal({ cookId, cookName, onClose }: ModalProps) {
   );
 }
 
-/* ─── 5. Reactivate Cook Modal ─── */
+/* ─── 5. Reactivate Cook Modal (action: "activate" → sets isApproved: true) ─── */
 export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
   const { mutate, isPending } = useUpdateCookStatus(cookId);
 
-  const handleReactivate = () => {
+  const handleActivate = () => {
     mutate(
       { action: "activate", note, notify },
       {
@@ -355,7 +360,7 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
           onClose();
         },
         onError: (e: any) =>
-          toast.error(e?.response?.data?.message ?? "Failed to reactivate cook."),
+          toast.error(e?.response?.data?.message ?? "Failed to activate cook."),
       },
     );
   };
@@ -370,18 +375,14 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
           </div>
           <div>
             <h2 className="text-base font-bold text-[#111827]">
-              Reactivate {cookName}?
+              Activate {cookName}?
             </h2>
             <p className="text-xs text-[#6B7280] mt-0.5">
-              This will restore their account and allow them to receive orders
-              on the platform immediately.
+              This will approve their account and allow them to start receiving orders on the platform.
             </p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-        >
+        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <X className="w-4 h-4 text-[#6B7280]" />
         </button>
       </div>
@@ -394,7 +395,7 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
             <span className="text-[#6B7280] font-normal">(optional)</span>
           </label>
           <textarea
-            placeholder="Add any additional context about why the account is being reactivated..."
+            placeholder="Add any additional context about why the account is being activated..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
@@ -406,17 +407,13 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
         <div className="flex items-center justify-between p-4 border border-[#E5E7EB] rounded-xl">
           <div>
             <p className="text-sm font-semibold text-[#111827]">Notify cook</p>
-            <p className="text-xs text-[#6B7280]">
-              Send reactivation notice via email
-            </p>
+            <p className="text-xs text-[#6B7280]">Send activation notice via email</p>
           </div>
           <button
             onClick={() => setNotify((p) => !p)}
             className={`relative w-11 h-6 rounded-full transition-colors ${notify ? "bg-[#219e02]" : "bg-gray-300"}`}
           >
-            <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${notify ? "translate-x-5" : ""}`}
-            />
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${notify ? "translate-x-5" : ""}`} />
           </button>
         </div>
 
@@ -426,26 +423,22 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
             <span className="text-white text-[10px] font-bold">i</span>
           </div>
           <p className="text-xs text-blue-600 leading-relaxed">
-            The cook&apos;s account will be immediately restored to active
-            status. They will be able to use the platform right away.
+            The cook&apos;s account will be approved and they will be able to start receiving orders on the platform right away.
           </p>
         </div>
       </div>
 
       {/* Footer */}
       <div className="flex gap-3 px-7 pb-7">
-        <button
-          onClick={onClose}
-          className="flex-1 py-3 rounded-xl border border-[#E5E7EB] text-sm font-semibold text-[#111827] hover:bg-gray-50 transition-colors"
-        >
+        <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-[#E5E7EB] text-sm font-semibold text-[#111827] hover:bg-gray-50 transition-colors">
           Cancel
         </button>
         <button
-          onClick={handleReactivate}
+          onClick={handleActivate}
           disabled={isPending}
           className="flex-1 py-3 rounded-xl bg-[#219e02] text-white text-sm font-semibold hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "Reactivating..." : "Reactivate Account"}
+          {isPending ? "Activating..." : "Activate Cook"}
         </button>
       </div>
     </ModalShell>

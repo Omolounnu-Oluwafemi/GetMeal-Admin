@@ -50,6 +50,10 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
 
   return (
     <>
+      {/* Click-outside overlay — only when no modal is open */}
+      {!activeModal && (
+        <div className="fixed inset-0 z-[9]" onClick={onClose} />
+      )}
       <div className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
         <button
           onClick={() => openModal("view-profile")}
@@ -101,23 +105,22 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
 
         <div className="border-t border-gray-200 my-1" />
 
-        {cook.status === "Suspended" ? (
+        {!cook.isApproved && (
           <button
             onClick={() => openModal("reactivate")}
             className="w-full px-4 py-2 text-left text-sm text-[#219e02] hover:bg-green-50 flex items-center gap-2 transition-colors"
           >
             <UserCheck className="w-4 h-4" />
-            Reactivate Cook
-          </button>
-        ) : (
-          <button
-            onClick={() => openModal("suspend")}
-            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-          >
-            <UserX className="w-4 h-4" />
-            Suspend Cook
+            Activate Cook
           </button>
         )}
+        <button
+          onClick={() => openModal("suspend")}
+          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+        >
+          <UserX className="w-4 h-4" />
+          Suspend Cook
+        </button>
       </div>
 
       {activeModal === "view-profile" && (
@@ -137,7 +140,7 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
         <SendEmailModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "change-status" && (
-        <ChangeStatusModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
+        <ChangeStatusModal cookId={cook.id} cookName={cook.name} isAvailable={cook.isAvailable} onClose={closeModal} />
       )}
       {activeModal === "add-note" && (
         <AddNoteModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
@@ -146,7 +149,7 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
         <IssueCreditModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "reactivate" && (
-        <ReactivateCookModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
+        <ReactivateCookModal cookId={cook.id} cookName={cook.name} isAvailable={cook.isAvailable} onClose={closeModal} />
       )}
       {activeModal === "suspend" && (
         <SuspendCookModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />

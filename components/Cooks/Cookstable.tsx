@@ -51,6 +51,8 @@ export interface Cook {
     meal: string;
   };
   status: "Online" | "Not Active" | "Suspended";
+  isAvailable: boolean;
+  isApproved: boolean;
 }
 
 interface CooksTableProps {

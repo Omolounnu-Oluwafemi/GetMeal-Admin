@@ -3,10 +3,10 @@ import api from "@/lib/api";
 
 export interface ApiCook {
   cookId: string;
-  name: string;
-  phone: string;
-  email: string;
-  location: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  location?: { type?: string; coordinates?: number[]; address?: string } | null;
   isAvailable: boolean;
   isApproved: boolean;
   status?: string;
@@ -83,7 +83,7 @@ export function useCooks(filters: CooksFilters) {
       }
 
       const res = await api.get("/api/admin/cooks", { params });
-      console.log("[useCooks] response:", res.data);
+      // console.log("[useCooks] response:", res.data);
       return res.data.cooks ?? [];
     },
   });
@@ -130,5 +130,21 @@ export function useCreditCookWallet(cookId: string) {
   return useMutation({
     mutationFn: (data: { amount: number; reason?: string }) =>
       api.post(`/api/admin/cooks/${cookId}/credit`, data),
+  });
+}
+
+export function useCreateCook() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+    }) => api.post("/api/admin/cooks", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cooks"] });
+      queryClient.invalidateQueries({ queryKey: ["cook-stats"] });
+    },
   });
 }
