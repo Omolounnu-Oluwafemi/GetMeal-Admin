@@ -2,17 +2,38 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
 export interface ApiCook {
-  cookId: string;
-  name?: string;
+  cookId?: string;    // from list endpoint
+  _id?: string;       // from single endpoint
+  name?: string;      // from list endpoint
+  cookName?: string;  // from single endpoint
   phone?: string;
   email?: string;
   location?: { type?: string; coordinates?: number[]; address?: string } | null;
+  cookAddress?: string;
+  cookingExperience?: string;
+  availableForCooking?: string;
   isAvailable: boolean;
   isApproved: boolean;
   status?: string;
   rating: number;
+  reviewsCount?: number;
   ordersCount: number;
   walletBalance: number;
+  availablePickup?: boolean;
+  schedule?: string[];
+  bankDetails?: {
+    bankName?: string;
+    bankCode?: string;
+    accountNumber?: string;
+    accountName?: string;
+  } | null;
+  userId?: {
+    _id?: string;
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    profileImage?: { url?: string; publicId?: string };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,7 +55,7 @@ interface CooksFilters {
 
 const STATUS_MAP: Record<string, string> = {
   Active: "active",
-  "Not Active": "inactive",
+  Inactive: "inactive",
   Suspended: "suspended",
 };
 
@@ -94,7 +115,10 @@ export function useCookById(cookId: string | null) {
     queryKey: ["cook", cookId],
     queryFn: async () => {
       const res = await api.get(`/api/admin/cooks/${cookId}`);
-      return res.data.cook ?? res.data;
+      const data = res.data.cook ?? res.data;
+      // Normalize: single endpoint uses _id, list uses cookId
+      if (data._id && !data.cookId) data.cookId = data._id;
+      return data;
     },
     enabled: !!cookId,
     staleTime: 5 * 60 * 1000,

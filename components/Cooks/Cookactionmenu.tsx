@@ -21,7 +21,42 @@ import {
   IssueCreditModal,
 } from "./CookModals";
 import CookProfileSidebar from "./CookProfileSidebar";
+import { useCookById } from "@/lib/hooks/cooks";
+import { mapCook } from "@/lib/mappers/cooks";
 import type { Cook } from "./Cookstable";
+
+function CookProfileFetcher({
+  cookId,
+  initialCook,
+  onClose,
+  onMessage,
+  onAddNote,
+  onSuspend,
+  onReactivate,
+}: {
+  cookId: string;
+  initialCook: Cook;
+  onClose: () => void;
+  onMessage: () => void;
+  onAddNote: () => void;
+  onSuspend: () => void;
+  onReactivate: () => void;
+}) {
+  const { data, isLoading } = useCookById(cookId);
+  // Show table data immediately, swap to full data once loaded
+  const cook = data && !isLoading ? mapCook(data) : initialCook;
+  return (
+    <CookProfileSidebar
+      cook={cook}
+      loading={isLoading}
+      onClose={onClose}
+      onMessage={onMessage}
+      onAddNote={onAddNote}
+      onSuspend={onSuspend}
+      onReactivate={onReactivate}
+    />
+  );
+}
 
 type ModalType =
   | "view-profile"
@@ -124,8 +159,9 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
       </div>
 
       {activeModal === "view-profile" && (
-        <CookProfileSidebar
-          cook={cook}
+        <CookProfileFetcher
+          cookId={cook.id}
+          initialCook={cook}
           onClose={closeModal}
           onMessage={() => setActiveModal("message")}
           onAddNote={() => setActiveModal("add-note")}

@@ -21,25 +21,12 @@ import {
   SuspendCookModal,
   ReactivateCookModal,
 } from "@/components/Cooks/CookModals";
-import { useCookStats, useCooks, useCookById, ApiCook } from "@/lib/hooks/cooks";
+import { useCookStats, useCooks, useCookById } from "@/lib/hooks/cooks";
+import { mapCook } from "@/lib/mappers/cooks";
 import PageLoader from "@/components/PageLoader";
 import AddCookModal from "@/components/Cooks/AddCookModal";
 import AddMealModal from "@/components/Cooks/AddMealModal";
 
-const AVATAR_COLORS = [
-  "#8B4513", "#9333EA", "#219e02", "#2563EB",
-  "#DC2626", "#D97706", "#0891B2", "#7C3AED",
-];
-
-function getInitials(name?: string) {
-  if (!name) return "?";
-  return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-}
-
-function getAvatarColor(id: string) {
-  const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
-}
 
 function formatNaira(value: number): string {
   if (value >= 1_000_000) return `₦${(value / 1_000_000).toFixed(1)}M`;
@@ -47,43 +34,6 @@ function formatNaira(value: number): string {
   return `₦${value}`;
 }
 
-function mapCook(c: ApiCook): Cook {
-  let status: "Online" | "Not Active" | "Suspended" = "Not Active";
-  if (c.status === "suspended") status = "Suspended";
-  else if (c.isAvailable) status = "Online";
-
-  return {
-    id: c.cookId,
-    name: c.name ?? "—",
-    initials: getInitials(c.name),
-    avatarColor: getAvatarColor(c.cookId),
-    kitchen: c.name ? `${c.name.split(" ")[0]}'s Kitchen` : "—",
-    city: c.location?.address ?? "—",
-    verified: c.isApproved ? "Verified" : "Pending",
-    rating: c.rating ?? 0,
-    ratingNumber: 0,
-    orders: c.ordersCount ?? 0,
-    joinedDate: new Date(c.createdAt).toLocaleDateString("en-GB", {
-      month: "short",
-      year: "numeric",
-    }),
-    phone: c.phone ?? "—",
-    email: c.email ?? "—",
-    nextCookingDay: "—",
-    schedule: "—",
-    onTimeRate: "—",
-    avgPrepTime: "—",
-    cancelRate: "—",
-    mealsListed: 0,
-    topMeal: { name: "—", orders: 0 },
-    totalEarnings: "—",
-    lastPayoutAmount: "—",
-    lastPayoutDate: "—",
-    status,
-    isAvailable: c.isAvailable,
-    isApproved: c.isApproved,
-  };
-}
 
 type ProfileModal = "message" | "add-note" | "suspend" | "reactivate" | null;
 

@@ -14,6 +14,7 @@ import type { Cook } from "./Cookstable";
 
 interface Props {
   cook: Cook;
+  loading?: boolean;
   onClose: () => void;
   onMessage: () => void;
   onAddNote: () => void;
@@ -57,7 +58,7 @@ export default function CookProfileSidebar({
               <img
                 src={cook.avatar}
                 alt={cook.name}
-                className="w-10 h-10 rounded-full object-cover"
+                className="w-16 h-16 rounded-full object-cover"
               />
             ) : (
               cook.initials
@@ -117,7 +118,7 @@ export default function CookProfileSidebar({
             <div className="flex items-center gap-2 mt-2 ">
               <span
                 className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  cook.status === "Online"
+                  cook.status === "Active"
                     ? "bg-[#F0FDF4] text-[#219e02]"
                     : cook.status === "Suspended"
                       ? "bg-red-100 text-red-700"

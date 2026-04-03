@@ -66,7 +66,7 @@ export default function CooksFilterPanel({
             STATUS
           </h4>
           <div className="space-y-2">
-            {["Active", "Not Active", "Suspended"].map((status) => (
+            {["Active", "Inactive", "Suspended"].map((status) => (
               <label
                 key={status}
                 className="flex items-center gap-2 cursor-pointer"

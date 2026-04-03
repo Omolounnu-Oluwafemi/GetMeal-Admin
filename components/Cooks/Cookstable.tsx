@@ -50,9 +50,17 @@ export interface Cook {
     text: string;
     meal: string;
   };
-  status: "Online" | "Not Active" | "Suspended";
+  status: "Active" | "Inactive" | "Suspended";
   isAvailable: boolean;
   isApproved: boolean;
+  walletBalance: number;
+  reviewsCount: number;
+  bankDetails?: { bankName?: string; accountNumber?: string; accountName?: string; bankCode?: string } | null;
+  scheduleList: string[];
+  cookingExperience?: string;
+  availableForCooking?: string;
+  profileImage?: string;
+  userEmail?: string;
 }
 
 interface CooksTableProps {
@@ -272,7 +280,7 @@ export default function CooksTable({ cooks, loading = false }: CooksTableProps) 
               <td className="px-6 py-4 whitespace-nowrap">
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    cook.status === "Online"
+                    cook.status === "Active"
                       ? "bg-[#F0FDF4] text-[#219e02]"
                       : cook.status === "Suspended"
                         ? "bg-[#FEF2F2] text-[#EF4444]"
