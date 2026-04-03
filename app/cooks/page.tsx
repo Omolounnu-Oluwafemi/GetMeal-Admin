@@ -24,6 +24,7 @@ import {
 import { useCookStats, useCooks, useCookById, ApiCook } from "@/lib/hooks/cooks";
 import PageLoader from "@/components/PageLoader";
 import AddCookModal from "@/components/Cooks/AddCookModal";
+import AddMealModal from "@/components/Cooks/AddMealModal";
 
 const AVATAR_COLORS = [
   "#8B4513", "#9333EA", "#219e02", "#2563EB",
@@ -126,6 +127,7 @@ function CooksPageContent() {
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const [showAddCook, setShowAddCook] = useState(false);
+  const [showAddMeal, setShowAddMeal] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
@@ -190,14 +192,26 @@ function CooksPageContent() {
       </div>
 
       <div className="overflow-hidden">
+        <div className="flex items-center gap-2 justify-end px-1 mb-2">
+          <button
+            onClick={() => setShowAddMeal(true)}
+            className="flex items-center gap-2 px-4 py-2 border border-[#219e02] text-[#219e02] rounded-lg text-sm font-medium hover:bg-[#f0fdf4] transition-colors"
+          >
+            + Create Meal
+          </button>
+          <button
+            onClick={() => setShowAddCook(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white rounded-lg text-sm font-medium hover:bg-[#1a7d01] transition-colors"
+          >
+            + Add Cook
+          </button>
+        </div>
         <FilterBar
           showFilters={showFilters}
           activeFilters={activeFilters}
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
           onExport={() => {}}
-          onAdd={() => setShowAddCook(true)}
-          addLabel="Add Cook"
         />
         {showFilters && (
           <CooksFilterPanel
@@ -214,6 +228,7 @@ function CooksPageContent() {
       </div>
 
       {showAddCook && <AddCookModal onClose={() => setShowAddCook(false)} />}
+      {showAddMeal && <AddMealModal onClose={() => setShowAddMeal(false)} />}
 
       {openProfileId && (
         <DirectCookProfile cookId={openProfileId} onClose={handleCloseProfile} />
