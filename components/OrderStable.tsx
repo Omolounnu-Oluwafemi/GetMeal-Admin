@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { MoreVertical, Phone, User, X, DollarSign } from "@/lib/icons";
 import OrderDetailsSidebar from "@/components/Order/Orderdetailssidebar";
 import OrderFiltersPopover from "@/components/Order/OrderFiltersPopover";
@@ -73,8 +74,27 @@ export default function OrdersTable({
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [activeTab, setActiveTab] = useState("all");
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<{ orderId: string; top: number; right: number } | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const menuButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    if (!openMenu) return;
+    const handler = (e: MouseEvent) => {
+      const btn = menuButtonRefs.current[openMenu.orderId];
+      if (btn && btn.contains(e.target as Node)) return;
+      setOpenMenu(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenu]);
+
+  const openMenuFor = (orderId: string) => {
+    const btn = menuButtonRefs.current[orderId];
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setOpenMenu({ orderId, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+  };
 
   const [sortBy, setSortBy] = useState("Date");
   const [sortOrder, setSortOrder] = useState("Descending");
@@ -405,87 +425,18 @@ export default function OrdersTable({
 
                   {/* Actions Menu */}
                   <td
-                    className="pr-4 py-4 whitespace-nowrap text-right border-y border-r border-[#F3F4F6] rounded-r-xl bg-white relative"
+                    className="pr-4 py-4 whitespace-nowrap text-right border-y border-r border-[#F3F4F6] rounded-r-xl bg-white"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
+                      ref={(el) => { menuButtonRefs.current[order.id] = el; }}
                       onClick={() =>
-                        setOpenMenuId(openMenuId === order.id ? null : order.id)
+                        openMenu?.orderId === order.id ? setOpenMenu(null) : openMenuFor(order.id)
                       }
                       className="p-1 hover:bg-gray-100 rounded transition-colors"
                     >
                       <MoreVertical className="w-5 h-5 text-gray-400" />
                     </button>
-
-                    {openMenuId === order.id && (
-                      <div className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          View Order Details
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <Phone className="w-4 h-4" /> Contact Cook
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <User className="w-4 h-4" /> Contact Customer
-                        </button>
-                        <div className="border-t border-gray-200 my-1" />
-                        <button
-                          onClick={() => {
-                            onCancelOrder?.(order.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <X className="w-4 h-4" /> Cancel Order
-                        </button>
-                        <button
-                          onClick={() => {
-                            onIssueRefund?.(order.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <DollarSign className="w-4 h-4" /> Issue Refund
-                        </button>
-                      </div>
-                    )}
                   </td>
                 </tr>
               ))}
@@ -493,6 +444,58 @@ export default function OrdersTable({
           </table>
         )}
       </div>
+
+      {openMenu && createPortal(
+        <div
+          className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[200]"
+          style={{ top: openMenu.top, right: openMenu.right }}
+        >
+          {(() => {
+            const order = filteredOrders.find((o) => o.id === openMenu.orderId);
+            if (!order) return null;
+            return (
+              <>
+                <button
+                  onClick={() => { setSelectedOrder(order); setOpenMenu(null); }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  View Order Details
+                </button>
+                <button
+                  onClick={() => { setSelectedOrder(order); setOpenMenu(null); }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <Phone className="w-4 h-4" /> Contact Cook
+                </button>
+                <button
+                  onClick={() => { setSelectedOrder(order); setOpenMenu(null); }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <User className="w-4 h-4" /> Contact Customer
+                </button>
+                <div className="border-t border-gray-200 my-1" />
+                <button
+                  onClick={() => { onCancelOrder?.(order.id); setOpenMenu(null); }}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" /> Cancel Order
+                </button>
+                <button
+                  onClick={() => { onIssueRefund?.(order.id); setOpenMenu(null); }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <DollarSign className="w-4 h-4" /> Issue Refund
+                </button>
+              </>
+            );
+          })()}
+        </div>,
+        document.body
+      )}
 
       {selectedOrder && (
         <OrderDetailsSidebar

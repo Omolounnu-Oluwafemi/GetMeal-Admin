@@ -73,30 +73,66 @@ function CustomSelect({
   );
 }
 
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem("user") ?? sessionStorage.getItem("user");
+    if (!raw) return null;
+    return JSON.parse(raw) as { _id?: string; fullName?: string; email?: string; role?: string; phone?: string };
+  } catch {
+    return null;
+  }
+}
+
 export default function ProfileSettings() {
-  const [formData, setFormData] = useState({
-    fullName: "Oluwaseun Adebayo",
-    email: "seun.adebayo@getameal.com",
-    phone: "+234 801 234 5678",
-    role: "Admin",
+  const [original, setOriginal] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    role: "",
     timezone: "Africa/Lagos (WAT)",
     language: "English",
   });
 
+  const [formData, setFormData] = useState({ ...original });
   const [hasChanges, setHasChanges] = useState(false);
 
+  useEffect(() => {
+    const user = readStoredUser();
+    if (!user) return;
+    const loaded = {
+      fullName: user.fullName ?? "",
+      email: user.email ?? "",
+      phone: user.phone ?? "",
+      role: user.role ?? "",
+      timezone: "Africa/Lagos (WAT)",
+      language: "English",
+    };
+    setOriginal(loaded);
+    setFormData(loaded);
+  }, []);
+
   const handleChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   };
 
   const handleSave = () => {
-    console.log("Saving profile...", formData);
+    // Persist updated name/email back to storage so sidebar initials stay in sync
+    try {
+      const inLocal = !!localStorage.getItem("user");
+      const storage = inLocal ? localStorage : sessionStorage;
+      const raw = storage.getItem("user");
+      if (raw) {
+        const user = JSON.parse(raw);
+        storage.setItem("user", JSON.stringify({ ...user, fullName: formData.fullName, email: formData.email }));
+      }
+    } catch { /* ignore */ }
+    setOriginal(formData);
     setHasChanges(false);
   };
 
   const handleCancel = () => {
-    // Reset to original values
+    setFormData(original);
     setHasChanges(false);
   };
 

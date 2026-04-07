@@ -13,6 +13,7 @@ import {
 import { Order } from "@/components/OrderStable";
 import { CircleDot, Disc2 } from "lucide-react";
 import CookOrdersView from "./CookOrdersView";
+import CallModal from "@/components/CallModal";
 
 interface OrderDetailsSidebarProps {
   order: Order;
@@ -68,6 +69,7 @@ export default function OrderDetailsSidebar({
   onIssueRefund,
 }: OrderDetailsSidebarProps) {
   const [showCookOrders, setShowCookOrders] = useState(false);
+  const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
 
   return (
     <>
@@ -223,7 +225,10 @@ export default function OrderDetailsSidebar({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <button
+                        onClick={() => setCallTarget({ name: order.customer.name, phone: order.customer.phone })}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
                         <Phone className="w-4 h-4 text-[#219e02]" />
                       </button>
                       <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -271,7 +276,10 @@ export default function OrderDetailsSidebar({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <button
+                        onClick={() => setCallTarget({ name: order.cook.name, phone: order.cook.phone })}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
                         <Phone className="w-4 h-4 text-[#219e02]" />
                       </button>
                       <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -386,6 +394,14 @@ export default function OrderDetailsSidebar({
             }
           `}</style>
         </>
+      )}
+
+      {callTarget && (
+        <CallModal
+          name={callTarget.name}
+          phone={callTarget.phone}
+          onClose={() => setCallTarget(null)}
+        />
       )}
 
       {showCookOrders && order.cook.name !== "—" && (

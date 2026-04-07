@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, MessageSquare, FileText } from "@/lib/icons";
+import { X, MessageSquare, FileText, Phone } from "@/lib/icons";
 import { Ban, UserCheck } from "lucide-react";
 import type { Customer } from "./Customerstable";
+import CallModal from "@/components/CallModal";
 
 interface Props {
   customer: Customer;
@@ -24,6 +26,8 @@ export default function CustomerProfileSidebar({
   onSuspend,
   onReactivate,
 }: Props) {
+  const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
+
   return createPortal(
     <>
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
@@ -125,6 +129,11 @@ export default function CustomerProfileSidebar({
               <div className="flex items-center gap-2 text-sm text-[#111827]">
                 <span className="text-[#9CA3AF]">Phone:</span>
                 <span className="font-medium">{customer.phone || "—"}</span>
+                {customer.phone && (
+                  <button onClick={() => setCallTarget({ name: customer.name, phone: customer.phone })} className="ml-1 p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Phone className="w-3.5 h-3.5 text-[#219e02]" />
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2 text-sm text-[#111827]">
                 <span className="text-[#9CA3AF]">Email:</span>
@@ -230,6 +239,7 @@ export default function CustomerProfileSidebar({
           )}
         </div>
       </div>
+      {callTarget && <CallModal name={callTarget.name} phone={callTarget.phone} onClose={() => setCallTarget(null)} />}
     </>,
     document.body,
   );

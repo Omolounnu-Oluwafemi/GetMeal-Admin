@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { X, Phone, MessageSquare } from "@/lib/icons";
+import CallModal from "@/components/CallModal";
 import { Package } from "lucide-react";
 import { useCustomerById } from "@/lib/hooks/customers";
 import { STATUS_MAP } from "@/lib/mappers/orders";
@@ -32,6 +34,7 @@ export default function UserOrdersView({
   userName,
   onClose,
 }: UserOrdersViewProps) {
+  const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
   const { data: customerData, isLoading } = useCustomerById(userId);
 
   const orders = customerData?.orders ?? [];
@@ -58,6 +61,7 @@ export default function UserOrdersView({
     .toUpperCase();
 
   return (
+    <>
     <div className="fixed inset-0 bg-[#fafafa] z-[60] flex flex-col overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-8 py-4 border-b border-gray-200">
@@ -165,7 +169,10 @@ export default function UserOrdersView({
               <MessageSquare className="w-4 h-4" />
               Send Message
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white text-sm font-medium rounded-full hover:bg-[#1a7d01] transition-colors">
+            <button
+              onClick={() => setCallTarget({ name: customerData?.fullName ?? userName, phone: customerData?.phone ?? "" })}
+              className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white text-sm font-medium rounded-full hover:bg-[#1a7d01] transition-colors"
+            >
               <Phone className="w-4 h-4" />
               Call Customer
             </button>
@@ -333,5 +340,14 @@ export default function UserOrdersView({
         </div>
       </div>
     </div>
+
+    {callTarget && (
+      <CallModal
+        name={callTarget.name}
+        phone={callTarget.phone}
+        onClose={() => setCallTarget(null)}
+      />
+    )}
+    </>
   );
 }

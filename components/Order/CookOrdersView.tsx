@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Star, Phone, MessageSquare } from "@/lib/icons";
+import CallModal from "@/components/CallModal";
 import { Package, DollarSign, TrendingUp, ShoppingBag } from "lucide-react";
 import { useCookById } from "@/lib/hooks/cooks";
 import { useOrdersFilter } from "@/lib/hooks/orders";
@@ -35,9 +36,8 @@ export default function CookOrdersView({
   cookName,
   onClose,
 }: CookOrdersViewProps) {
-  const [activeTab, setActiveTab] = useState<"history" | "performance">(
-    "history",
-  );
+  const [activeTab, setActiveTab] = useState<"history" | "performance">("history");
+  const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
 
   const { data: cookData, isLoading: cookLoading } = useCookById(cookId);
   const { data: ordersData, isLoading: ordersLoading } = useOrdersFilter({
@@ -67,6 +67,7 @@ export default function CookOrdersView({
   };
 
   return (
+    <>
     <div className="fixed top-0 right-0 bottom-0 left-[108px] bg-[#fafafa] z-[60] flex flex-col overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-8 py-4 border-b border-gray-200">
@@ -209,7 +210,10 @@ export default function CookOrdersView({
               <MessageSquare className="w-4 h-4" />
               Send Message
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white text-sm font-medium rounded-full hover:bg-[#1a7d01] transition-colors">
+            <button
+              onClick={() => setCallTarget({ name: cook?.name ?? cookName, phone: cook?.phone ?? "" })}
+              className="flex items-center gap-2 px-4 py-2 bg-[#219e02] text-white text-sm font-medium rounded-full hover:bg-[#1a7d01] transition-colors"
+            >
               <Phone className="w-4 h-4" />
               Call Cook
             </button>
@@ -446,5 +450,14 @@ export default function CookOrdersView({
         )}
       </div>
     </div>
+
+    {callTarget && (
+      <CallModal
+        name={callTarget.name}
+        phone={callTarget.phone}
+        onClose={() => setCallTarget(null)}
+      />
+    )}
+    </>
   );
 }
