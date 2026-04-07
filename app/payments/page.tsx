@@ -5,9 +5,8 @@ import FilterBar from "@/components/Filterbar";
 import PaymentsFilterPanel from "@/components/Payments/Paymentsfilterpanel";
 import PaymentsTable, { Payment } from "@/components/Payments/Paymentstable";
 import PaymentStatCard from "@/components/Payments/PaymentStatsCard";
-import { useQueries } from "@tanstack/react-query";
 import { usePayments, usePaymentStats, ApiPayment } from "@/lib/hooks/payments";
-import api from "@/lib/api";
+import { exportCSV } from "@/lib/exportCSV";
 import PageLoader from "@/components/PageLoader";
 
 const AVATAR_COLORS = [
@@ -69,19 +68,6 @@ export default function PaymentsPage() {
   const { data: statsData, isLoading: statsLoading } = usePaymentStats({ status: selectedStatus, sortBy });
   const { data: paymentsData, isLoading: paymentsLoading } = usePayments({ status: selectedStatus, sortBy });
 
-  const cookIds = [...new Set((paymentsData ?? []).map((p) => p.cookId?._id).filter(Boolean) as string[])];
-
-  const cookQueries = useQueries({
-    queries: cookIds.map((id) => ({
-      queryKey: ["cook", id],
-      queryFn: async () => {
-        const res = await api.get(`/api/admin/cooks/${id}`);
-        return res.data.cook ?? res.data;
-      },
-      staleTime: 5 * 60 * 1000,
-    })),
-  });
-
   useEffect(() => {
     const filters: string[] = [];
     if (selectedStatus) filters.push(`Status: ${selectedStatus}`);
@@ -91,13 +77,7 @@ export default function PaymentsPage() {
 
   if (statsLoading || paymentsLoading) return <PageLoader />;
 
-  const cookMap: Record<string, string> = Object.fromEntries(
-    cookIds.map((id, i) => [id, cookQueries[i]?.data?.name ?? "—"]),
-  );
-
-  const payments: Payment[] = (paymentsData ?? []).map((p) =>
-    mapPayment(p, cookMap),
-  );
+  const payments: Payment[] = (paymentsData ?? []).map((p) => mapPayment(p));
 
   const handleClearFilters = () => {
     setSelectedStatus(null);
@@ -151,7 +131,13 @@ export default function PaymentsPage() {
           activeFilters={activeFilters}
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
-          onExport={() => {}}
+          onExport={() =>
+            exportCSV(
+              "payments.csv",
+              ["Reference", "Customer", "Amount", "Delivery", "Order Status", "Payment Status", "Date"],
+              payments.map((p) => [p.orderId, p.customer.name, p.amountValue, p.method, p.status, p.status, p.date])
+            )
+          }
         />
 
         {showFilters && (

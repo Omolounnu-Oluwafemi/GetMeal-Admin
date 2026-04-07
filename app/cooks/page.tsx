@@ -23,6 +23,7 @@ import {
 } from "@/components/Cooks/CookModals";
 import { useCookStats, useCooks, useCookById } from "@/lib/hooks/cooks";
 import { mapCook } from "@/lib/mappers/cooks";
+import { exportCSV } from "@/lib/exportCSV";
 import PageLoader from "@/components/PageLoader";
 import AddCookModal from "@/components/Cooks/AddCookModal";
 import AddMealModal from "@/components/Cooks/AddMealModal";
@@ -161,7 +162,13 @@ function CooksPageContent() {
           activeFilters={activeFilters}
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
-          onExport={() => {}}
+          onExport={() =>
+            exportCSV(
+              "cooks.csv",
+              ["Name", "Kitchen", "City", "Status", "Verified", "Rating", "Orders", "Phone", "Email", "Joined"],
+              cooks.map((c) => [c.name, c.kitchen, c.city, c.status, c.verified, c.rating, c.orders, c.phone, c.email, c.joinedDate])
+            )
+          }
         />
         {showFilters && (
           <CooksFilterPanel

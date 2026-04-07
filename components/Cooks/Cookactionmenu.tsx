@@ -12,7 +12,6 @@ import {
   CreditCard,
 } from "@/lib/icons";
 import {
-  ViewOrdersModal,
   SendEmailModal,
   ChangeStatusModal,
   AddNoteModal,
@@ -20,6 +19,7 @@ import {
   SuspendCookModal,
   IssueCreditModal,
 } from "./CookModals";
+import CookOrdersView from "@/components/Order/CookOrdersView";
 import CookProfileSidebar from "./CookProfileSidebar";
 import { useCookById } from "@/lib/hooks/cooks";
 import { mapCook } from "@/lib/mappers/cooks";
@@ -42,7 +42,7 @@ function CookProfileFetcher({
   onSuspend: () => void;
   onReactivate: () => void;
 }) {
-  const { data, isLoading } = useCookById(cookId);
+  const { data, isLoading } = useCookById(cookId, { staleTime: 0, refetchOnMount: "always" });
   // Show table data immediately, swap to full data once loaded
   const cook = data && !isLoading ? mapCook(data) : initialCook;
   return (
@@ -170,7 +170,7 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
         />
       )}
       {activeModal === "view-orders" && (
-        <ViewOrdersModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
+        <CookOrdersView cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "message" && (
         <SendEmailModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />

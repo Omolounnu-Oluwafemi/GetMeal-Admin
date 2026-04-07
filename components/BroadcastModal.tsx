@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Send, Megaphone, Users, ChevronDown, Check } from "@/lib/icons";
+import { toast } from "sonner";
+import { useSendBroadcast } from "@/lib/hooks/broadcast";
+import { useCustomers } from "@/lib/hooks/customers";
+import { useCookStats } from "@/lib/hooks/cooks";
 
 interface BroadcastModalProps {
   onClose: () => void;
 }
 
-type MessageType = "promotional" | "announcement" | "alert";
+type MessageType = "system" | "announcement" | "alert";
 type Audience = "all" | "active" | "zone" | "cooks";
 
 const messageTypes: {
@@ -18,7 +22,7 @@ const messageTypes: {
   bgColor: string;
 }[] = [
   {
-    type: "promotional",
+    type: "system",
     label: "Promotional",
     emoji: "🎉",
     color: "#209d01",
@@ -49,48 +53,37 @@ const zones = [
   { id: "gbagada", name: "Gbagada / Bariga", customers: 1200 },
 ];
 
-const audienceOptions = [
-  { value: "all", label: "All Customers", count: 15000 },
-  { value: "active", label: "Active Customers", count: 8500 },
-  { value: "zone", label: "Specific Zone", count: 0 },
-  { value: "cooks", label: "Cooks", count: 500 },
-];
-
-const exampleMessages: Record<MessageType, { title: string; message: string }> =
-  {
-    promotional: {
-      title: "50% Off Your Next Order!",
-      message:
-        "Enjoy half price on all meals this weekend. Order now and save big! Limited time offer.",
-    },
-    announcement: {
-      title: "New Menu Items Available",
-      message:
-        "We've added exciting new dishes to our menu. Check out our latest offerings and try something new today!",
-    },
-    alert: {
-      title: "Service Update",
-      message:
-        "We're experiencing high demand in your area. Delivery times may be slightly longer than usual. Thank you for your patience!",
-    },
-  };
 
 export default function BroadcastModal({ onClose }: BroadcastModalProps) {
-  const [selectedType, setSelectedType] = useState<MessageType>("promotional");
+  const [selectedType, setSelectedType] = useState<MessageType>("system");
   const [selectedAudience, setSelectedAudience] = useState<Audience>("all");
   const [selectedZone, setSelectedZone] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [audienceOpen, setAudienceOpen] = useState(false);
   const [zoneOpen, setZoneOpen] = useState(false);
 
-  // Auto-fill example message when type changes
-  useEffect(() => {
-    const example = exampleMessages[selectedType];
-    setTitle(example.title);
-    setMessage(example.message);
-  }, [selectedType]);
+  const { mutateAsync: sendBroadcast, isPending: sending } = useSendBroadcast();
+  const { data: customersData } = useCustomers();
+  const { data: cookStatsData } = useCookStats();
+
+  const audienceOptions = [
+    {
+      value: "all",
+      label: "All Customers",
+      count: customersData?.stats.totalCustomers ?? 0,
+    },
+    {
+      value: "active",
+      label: "Active Customers",
+      count:
+        (customersData?.stats.totalCustomers ?? 0) -
+        (customersData?.stats.noPurchases ?? 0),
+    },
+    { value: "zone", label: "Specific Zone", count: 0 },
+    { value: "cooks", label: "Cooks", count: cookStatsData?.activeCooks ?? 0 },
+  ];
+
 
   const getEstimatedReach = () => {
     if (selectedAudience === "zone" && selectedZone) {
@@ -104,11 +97,23 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
   const handleSend = async () => {
     if (!title.trim() || !message.trim()) return;
 
-    setSending(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSending(false);
-    onClose();
+    try {
+      const res = await sendBroadcast({
+        title: title.trim(),
+        body: message.trim(),
+        type: selectedType,
+        data: {
+          audience: selectedAudience,
+          ...(selectedAudience === "zone" && selectedZone
+            ? { zone: selectedZone }
+            : {}),
+        },
+      });
+      toast.success(`Broadcast sent to ${res.count.toLocaleString()} ${selectedAudience === "cooks" ? "cook" : "user"}${res.count !== 1 ? "s" : ""}!`);
+      onClose();
+    } catch {
+      toast.error("Failed to send broadcast. Please try again.");
+    }
   };
 
   const selectedTypeData = messageTypes.find((t) => t.type === selectedType)!;
@@ -384,7 +389,10 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
             <div className="p-5 bg-[#F9FAFB] rounded-[12px] ">
               <div className="bg-white p-4 rounded-[12px] shadow-sm border border-[#e3e9f3]">
                 <div className="flex gap-3">
-                  <div className="text-[14px] h-8 px-2 rounded-lg flex items-center" style={{ backgroundColor: selectedTypeData.bgColor }}>
+                  <div
+                    className="text-[14px] h-8 px-2 rounded-lg flex items-center"
+                    style={{ backgroundColor: selectedTypeData.bgColor }}
+                  >
                     {selectedTypeData.emoji}
                   </div>
                   <div className="flex-1 min-w-0">

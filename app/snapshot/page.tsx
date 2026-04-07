@@ -7,6 +7,7 @@ import LiveOrdersList from "@/components/Snapshot/Liveorderslist";
 import AlertsPanel from "@/components/Snapshot/Alertspanel";
 import ZoneActivityList from "@/components/Snapshot/Zoneactivitylist";
 import NudgeCooksModal from "@/components/Snapshot/Nudgecooksmodal";
+import BroadcastModal from "@/components/BroadcastModal";
 import { useSnapshot } from "@/lib/hooks/snapshot";
 import PageLoader from "@/components/PageLoader";
 
@@ -37,6 +38,7 @@ const ALERT_COLOR: Record<string, string> = {
 
 export default function SnapshotPage() {
   const [showNudgeModal, setShowNudgeModal] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   const { data, isLoading } = useSnapshot({ date: today });
@@ -153,6 +155,7 @@ export default function SnapshotPage() {
             Nudge cooks online
           </button>
           <button
+            onClick={() => setShowBroadcastModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#219e02] hover:text-[#219e02] transition-colors"
           >
             <Send className="w-4 h-4" />
@@ -178,6 +181,9 @@ export default function SnapshotPage() {
 
       {showNudgeModal && (
         <NudgeCooksModal onClose={() => setShowNudgeModal(false)} />
+      )}
+      {showBroadcastModal && (
+        <BroadcastModal onClose={() => setShowBroadcastModal(false)} />
       )}
     </div>
   );

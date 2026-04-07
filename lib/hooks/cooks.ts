@@ -1,6 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
+export interface ApiMeal {
+  _id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  price: number;
+  images: { url: string; publicId: string }[];
+  status: "open" | "cooking" | "closed" | string;
+  portionsRemaining?: number;
+  createdAt: string;
+}
+
 export interface ApiCook {
   cookId?: string;    // from list endpoint
   _id?: string;       // from single endpoint
@@ -36,6 +48,8 @@ export interface ApiCook {
   } | null;
   createdAt: string;
   updatedAt: string;
+  meals?: ApiMeal[];
+  totalMeals?: number;
 }
 
 export interface CookStats {
@@ -110,7 +124,7 @@ export function useCooks(filters: CooksFilters) {
   });
 }
 
-export function useCookById(cookId: string | null) {
+export function useCookById(cookId: string | null, options?: { staleTime?: number; refetchOnMount?: boolean | "always" }) {
   return useQuery<ApiCook>({
     queryKey: ["cook", cookId],
     queryFn: async () => {
@@ -118,10 +132,13 @@ export function useCookById(cookId: string | null) {
       const data = res.data.cook ?? res.data;
       // Normalize: single endpoint uses _id, list uses cookId
       if (data._id && !data.cookId) data.cookId = data._id;
+      data.meals = res.data.meals ?? [];
+      data.totalMeals = res.data.totalMeals ?? 0;
       return data;
     },
     enabled: !!cookId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: options?.staleTime ?? 5 * 60 * 1000,
+    refetchOnMount: options?.refetchOnMount ?? false,
   });
 }
 

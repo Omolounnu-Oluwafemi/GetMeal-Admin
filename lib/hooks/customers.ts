@@ -14,6 +14,21 @@ export interface ApiCustomer {
   notes: { note: string; createdAt: string }[];
 }
 
+export interface ApiCustomerOrder {
+  _id: string;
+  totalAmount: number;
+  status: string;
+  paymentStatus: string;
+  deliveryType: string;
+  createdAt: string;
+}
+
+export interface ApiCustomerDetail extends ApiCustomer {
+  walletBalance: number;
+  orders: ApiCustomerOrder[];
+  transactions: unknown[];
+}
+
 export interface CustomerStats {
   totalCustomers: number;
   newToday: number;
@@ -43,10 +58,10 @@ const SORT_MAP: Record<string, string> = {
 };
 
 export function useCustomerById(customerId: string | null) {
-  return useQuery<ApiCustomer>({
+  return useQuery<ApiCustomerDetail>({
     queryKey: ["customer", customerId],
     queryFn: async () => {
-      const res = await api.get(`/api/admin/customers/${customerId}`);
+      const res = await api.get(`/api/admin/customer/${customerId}`);
       return res.data.customer ?? res.data;
     },
     enabled: !!customerId,

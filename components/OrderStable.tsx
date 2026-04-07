@@ -23,11 +23,26 @@ export interface Order {
     email: string;
     phone: string;
   };
-  customer: { name: string; email: string; phone: string };
-  timeline: { orderPlaced: string; expectedDelivery: string };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  timeline: {
+    orderPlaced: string;
+    expectedDelivery: string;
+  };
   status: string;
   statusColor: string;
   tabKey: string;
+  mealItems?: {
+    name: string;
+    image: string;
+    quantity: number;
+    price: number;
+  }[];
+  cookId?: string;
+  customerId?: string;
 }
 
 interface OrdersTableProps {
@@ -122,12 +137,36 @@ export default function OrdersTable({
 
   const filterTabs = [
     { label: "All Orders", count: orders.length, value: "all" },
-    { label: "Pending", count: orders.filter((o) => o.tabKey === "new").length, value: "new" },
-    { label: "Active Cooks", count: orders.filter((o) => o.tabKey === "active-cooks").length, value: "active-cooks" },
-    { label: "At-Risk Orders", count: pagedAtRiskOrders.length, value: "at-risk" },
-    { label: "Cancelled", count: orders.filter((o) => o.tabKey === "cancelled").length, value: "cancelled" },
-    { label: "Completed", count: orders.filter((o) => o.tabKey === "completed").length, value: "completed" },
-    { label: "Refunded", count: orders.filter((o) => o.tabKey === "refunded").length, value: "refunded" },
+    {
+      label: "Pending",
+      count: orders.filter((o) => o.tabKey === "new").length,
+      value: "new",
+    },
+    {
+      label: "Active Cooks",
+      count: orders.filter((o) => o.tabKey === "active-cooks").length,
+      value: "active-cooks",
+    },
+    {
+      label: "At-Risk Orders",
+      count: pagedAtRiskOrders.length,
+      value: "at-risk",
+    },
+    {
+      label: "Cancelled",
+      count: orders.filter((o) => o.tabKey === "cancelled").length,
+      value: "cancelled",
+    },
+    {
+      label: "Completed",
+      count: orders.filter((o) => o.tabKey === "completed").length,
+      value: "completed",
+    },
+    {
+      label: "Refunded",
+      count: orders.filter((o) => o.tabKey === "refunded").length,
+      value: "refunded",
+    },
   ];
 
   const sourceOrders = activeTab === "at-risk" ? pagedAtRiskOrders : orders;
@@ -233,7 +272,10 @@ export default function OrdersTable({
         {loading ? (
           <div className="py-6 space-y-3 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center gap-4 p-4 border border-[#F3F4F6] rounded-xl">
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 border border-[#F3F4F6] rounded-xl"
+              >
                 <div className="w-14 h-14 bg-gray-200 rounded-lg flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-1/3" />
@@ -280,33 +322,55 @@ export default function OrdersTable({
 
                   {/* Meal */}
                   <td className="pl-4 pr-1 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white w-[20%]">
-                    <div className="text-xs text-gray-500 uppercase mb-1">MEAL</div>
-                    <span className="text-base font-medium text-gray-900 text-wrap block" title={order.meal}>
-                      {order.meal}{order.items > 0 ? ` + ${order.items} Item${order.items > 1 ? "s" : ""}` : ""}
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      MEAL
+                    </div>
+                    <span
+                      className="text-base font-medium text-gray-900 text-wrap block"
+                      title={order.meal}
+                    >
+                      {order.meal}
+                      {order.items > 0
+                        ? ` + ${order.items} Item${order.items > 1 ? "s" : ""}`
+                        : ""}
                     </span>
                   </td>
 
                   {/* Order ID */}
                   <td className="px-6 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white">
-                    <div className="text-xs text-gray-500 uppercase mb-1">ORDER ID</div>
-                    <div className="text-base font-medium text-gray-900">{order.orderId}</div>
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      ORDER ID
+                    </div>
+                    <div className="text-base font-medium text-gray-900">
+                      {order.orderId}
+                    </div>
                   </td>
 
                   {/* Customer Area */}
                   <td className="px-10 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white">
-                    <div className="text-xs text-gray-500 uppercase mb-1">CUSTOMER AREA</div>
-                    <div className="text-base text-gray-900">{order.customerArea}</div>
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      CUSTOMER AREA
+                    </div>
+                    <div className="text-base text-gray-900">
+                      {order.customerArea}
+                    </div>
                   </td>
 
                   {/* Payment */}
                   <td className="pl-4 pr-24 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white">
-                    <div className="text-xs text-gray-500 uppercase mb-1">PAYMENT</div>
-                    <div className="text-base font-semibold text-gray-900">{order.payment}</div>
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      PAYMENT
+                    </div>
+                    <div className="text-base font-semibold text-gray-900">
+                      {order.payment}
+                    </div>
                   </td>
 
                   {/* Cook */}
                   <td className="px-4 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white">
-                    <div className="text-xs text-gray-500 uppercase mb-1">COOK</div>
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      COOK
+                    </div>
                     <div className="flex items-center gap-2">
                       <div
                         className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -314,7 +378,10 @@ export default function OrdersTable({
                       >
                         {order.cook.initial}
                       </div>
-                      <span className="text-base text-gray-900 truncate max-w-[120px]" title={order.cook.name}>
+                      <span
+                        className="text-base text-gray-900 truncate max-w-[120px]"
+                        title={order.cook.name}
+                      >
                         {order.cook.name}
                       </span>
                     </div>
@@ -322,10 +389,14 @@ export default function OrdersTable({
 
                   {/* Status */}
                   <td className="px-4 py-3 whitespace-nowrap border-y border-[#F3F4F6] bg-white">
-                    <div className="text-xs text-gray-500 uppercase mb-1">STATUS</div>
+                    <div className="text-xs text-gray-500 uppercase mb-1">
+                      STATUS
+                    </div>
                     <div
                       className={`text-sm font-medium ${
-                        order.status === "Cooking" ? "text-green-600" : "text-gray-500"
+                        order.status === "Cooking"
+                          ? "text-green-600"
+                          : "text-gray-500"
                       }`}
                     >
                       {order.status}
@@ -338,7 +409,9 @@ export default function OrdersTable({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      onClick={() => setOpenMenuId(openMenuId === order.id ? null : order.id)}
+                      onClick={() =>
+                        setOpenMenuId(openMenuId === order.id ? null : order.id)
+                      }
                       className="p-1 hover:bg-gray-100 rounded transition-colors"
                     >
                       <MoreVertical className="w-5 h-5 text-gray-400" />
@@ -347,36 +420,66 @@ export default function OrdersTable({
                     {openMenuId === order.id && (
                       <div className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <button
-                          onClick={() => { setSelectedOrder(order); setOpenMenuId(null); }}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setOpenMenuId(null);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
                           </svg>
                           View Order Details
                         </button>
                         <button
-                          onClick={() => { setSelectedOrder(order); setOpenMenuId(null); }}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setOpenMenuId(null);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                         >
                           <Phone className="w-4 h-4" /> Contact Cook
                         </button>
                         <button
-                          onClick={() => { setSelectedOrder(order); setOpenMenuId(null); }}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setOpenMenuId(null);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                         >
                           <User className="w-4 h-4" /> Contact Customer
                         </button>
                         <div className="border-t border-gray-200 my-1" />
                         <button
-                          onClick={() => { onCancelOrder?.(order.id); setOpenMenuId(null); }}
+                          onClick={() => {
+                            onCancelOrder?.(order.id);
+                            setOpenMenuId(null);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                         >
                           <X className="w-4 h-4" /> Cancel Order
                         </button>
                         <button
-                          onClick={() => { onIssueRefund?.(order.id); setOpenMenuId(null); }}
+                          onClick={() => {
+                            onIssueRefund?.(order.id);
+                            setOpenMenuId(null);
+                          }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                         >
                           <DollarSign className="w-4 h-4" /> Issue Refund

@@ -27,8 +27,8 @@ export default function SettingsPage() {
     switch (activeTab) {
       case "profile":
         return <ProfileSettings />;
-      case "notifications":
-        return <NotificationSettings />;
+      // case "notifications":
+      //   return <NotificationSettings />;
       case "security":
         return <SecuritySettings />;
       case "team":
@@ -46,7 +46,9 @@ export default function SettingsPage() {
       <SettingsNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Content Area */}
-      <div className={`flex-1 ml-4 ${activeTab === "security" || activeTab === "system" ? "" : "p-6 bg-white rounded-2xl shadow-md"}`}>
+      <div
+        className={`flex-1 ml-4 ${activeTab === "security" || activeTab === "system" ? "" : "p-6 bg-white rounded-2xl shadow-md"}`}
+      >
         {renderContent()}
       </div>
 
@@ -169,7 +171,7 @@ function SecuritySettings() {
       </div>
 
       {/* Two-Factor Authentication */}
-      <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+      {/* <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
         <div className="flex items-start justify-between mb-3">
           <div>
             <h3 className="text-base font-semibold text-gray-900">
@@ -191,7 +193,7 @@ function SecuritySettings() {
           <Shield className="w-4 h-4" />
           Enable 2FA
         </button>
-      </div>
+      </div> */}
 
       {/* Active Sessions */}
       <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">

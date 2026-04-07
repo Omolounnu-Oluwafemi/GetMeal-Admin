@@ -85,6 +85,28 @@ export function usePayments(filters: PaymentsFilters) {
   });
 }
 
+export interface ApiPaymentDetail extends ApiPayment {
+  userId: {
+    _id: string;
+    email: string;
+    fullName: string;
+    phone?: string;
+  } | null;
+}
+
+export function usePaymentById(paymentId: string | null) {
+  return useQuery<ApiPaymentDetail>({
+    queryKey: ["payment", paymentId],
+    queryFn: async () => {
+      const res = await api.get(`/api/admin/payments/${paymentId}`);
+      return res.data.payment ?? res.data;
+    },
+    enabled: !!paymentId,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+}
+
 export function useRefundPayment(paymentId: string) {
   const queryClient = useQueryClient();
   return useMutation({

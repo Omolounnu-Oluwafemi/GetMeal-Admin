@@ -44,20 +44,45 @@ export interface ApiOrderDetail {
 
 export interface ApiOrder {
   _id: string;
-  userId: { _id: string; fullName: string; phone: string } | null;
-  cookId: { _id: string; fullName: string; phone: string } | null;
+  user: { _id: string; fullName: string; phone: string } | null;
+  cook: { _id: string; fullName: string; phone: string } | null;
   totalAmount: number;
-  mealItems: { mealId: string; quantity: number; price: number; _id: string }[];
+  mealItems: {
+    mealId: string;
+    name: string;
+    images: { url: string; publicId: string }[];
+    quantity: number;
+    price: number;
+    _id?: string;
+  }[];
   deliveryType: string;
   note?: string | null;
   status: string;
   paymentStatus: string;
-  paymentReference: string;
+  paymentReference?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
-export type ApiAtRiskOrder = ApiOrder;
+export interface ApiAtRiskOrder {
+  _id: string;
+  userId: { _id: string; fullName: string; phone: string } | null;
+  cookId: { _id: string; fullName: string; phone: string } | null;
+  totalAmount: number;
+  mealItems: {
+    mealId: string;
+    quantity: number;
+    price: number;
+    _id?: string;
+  }[];
+  deliveryType: string;
+  note?: string | null;
+  status: string;
+  paymentStatus: string;
+  paymentReference?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export function useOrders(page = 1) {
   return useQuery<{ page: number; total: number; pages: number; orders: ApiOrder[] }>({

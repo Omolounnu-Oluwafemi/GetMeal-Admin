@@ -22,53 +22,10 @@ import {
   SuspendUserModal,
   ReactivateModal,
 } from "@/components/Customers/CustomerModals";
-import { useCustomers, useCustomerById, ApiCustomer } from "@/lib/hooks/customers";
+import { useCustomers, useCustomerById } from "@/lib/hooks/customers";
+import { mapCustomer, mapCustomerDetail } from "@/lib/mappers/customers";
+import { exportCSV } from "@/lib/exportCSV";
 import PageLoader from "@/components/PageLoader";
-
-const AVATAR_COLORS = [
-  "#8B4513",
-  "#9333EA",
-  "#219e02",
-  "#2563EB",
-  "#DC2626",
-  "#D97706",
-  "#0891B2",
-  "#7C3AED",
-];
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-function getAvatarColor(id: string) {
-  const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
-}
-
-function mapCustomer(c: ApiCustomer): Customer {
-  const lastActive = new Date(c.lastActive);
-  const daysDiff = Math.floor(
-    (Date.now() - lastActive.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  return {
-    id: c._id,
-    name: c.fullName,
-    initials: getInitials(c.fullName),
-    avatarColor: getAvatarColor(c._id),
-    phone: c.phone,
-    email: c.email,
-    city: c.city || "—",
-    orders: c.ordersCount,
-    lastOrderDays: daysDiff,
-    lastOrderDate: lastActive.toLocaleDateString("en-GB"),
-    status: c.status === "active" ? "Active" : "Suspended",
-  };
-}
 
 type CustomerModal = "message" | "add-note" | "suspend" | "reactivate" | null;
 
@@ -77,7 +34,7 @@ function DirectCustomerProfile({ customerId, onClose }: { customerId: string; on
   const [activeModal, setActiveModal] = useState<CustomerModal>(null);
 
   if (!data) return null;
-  const customer = mapCustomer(data);
+  const customer = mapCustomerDetail(data);
   const closeModal = () => setActiveModal(null);
 
   return (
@@ -216,7 +173,13 @@ function CustomersPageContent() {
           activeFilters={activeFilters}
           onToggleFilters={() => setShowFilters(!showFilters)}
           onRemoveFilter={handleRemoveFilter}
-          onExport={() => {}}
+          onExport={() =>
+            exportCSV(
+              "customers.csv",
+              ["Name", "Email", "Phone", "City", "Status", "Orders", "Joined"],
+              customers.map((c) => [c.name, c.email ?? "", c.phone ?? "", c.city ?? "", c.status, c.orders ?? 0, c.joinedAt ?? ""])
+            )
+          }
         />
 
         {showFilters && (

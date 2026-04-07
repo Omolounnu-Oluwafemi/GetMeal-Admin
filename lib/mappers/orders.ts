@@ -11,6 +11,57 @@ export const STATUS_MAP: Record<string, { status: string; statusColor: string; t
 };
 
 export function mapOrder(o: ApiOrder): Order {
+  const cookName = o.cook?.fullName ?? "—";
+  const totalItems = o.mealItems?.reduce((sum, i) => sum + i.quantity, 0) ?? 1;
+  const mainItem = o.mealItems?.[0];
+  const statusInfo = STATUS_MAP[o.status] ?? {
+    status: o.status,
+    statusColor: "bg-gray-100 text-gray-500",
+    tabKey: "new",
+  };
+
+  return {
+    id: o._id,
+    meal: mainItem?.name ?? "—",
+    items: Math.max(0, totalItems - (mainItem?.quantity ?? 1)),
+    image: mainItem?.images?.[0]?.url ?? "",
+    orderId: `#GTM-${o._id.slice(-6)}`,
+    customerArea: "—",
+    payment: `₦${(o.totalAmount ?? 0).toLocaleString()}`,
+    paymentStatus:
+      o.paymentStatus === "paid"
+        ? "Paid"
+        : o.paymentStatus === "pending"
+          ? "Pending"
+          : "Failed",
+    cook: {
+      initial: cookName[0]?.toUpperCase() ?? "?",
+      name: cookName,
+      color: "#219e02",
+      email: "",
+      phone: o.cook?.phone ?? "",
+    },
+    customer: {
+      name: o.user?.fullName ?? "—",
+      email: "",
+      phone: o.user?.phone ?? "",
+    },
+    timeline: {
+      orderPlaced: new Date(o.createdAt).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      expectedDelivery: "—",
+    },
+    ...statusInfo,
+    cookId: o.cook?._id,
+    customerId: o.user?._id,
+  };
+}
+
+export function mapAtRiskOrder(o: ApiAtRiskOrder): Order {
   const cookName = o.cookId?.fullName ?? "—";
   const totalItems = o.mealItems?.reduce((sum, i) => sum + i.quantity, 0) ?? 1;
   const mainItem = o.mealItems?.[0];
@@ -56,14 +107,10 @@ export function mapOrder(o: ApiOrder): Order {
       expectedDelivery: "—",
     },
     ...statusInfo,
-  };
-}
-
-export function mapAtRiskOrder(o: ApiAtRiskOrder): Order {
-  return {
-    ...mapOrder(o),
     statusColor: "bg-red-100 text-red-600",
     tabKey: "at-risk",
+    cookId: o.cookId?._id,
+    customerId: o.userId?._id,
   };
 }
 
@@ -120,5 +167,6 @@ export function mapFilterOrder(o: ApiOrderFilter): Order {
         : "—",
     },
     ...statusInfo,
+    cookId: o.cook?.cookId,
   };
 }

@@ -7,6 +7,7 @@ import type { Customer } from "./Customerstable";
 
 interface Props {
   customer: Customer;
+  loading?: boolean;
   onClose: () => void;
   onMessage: () => void;
   onAddNote: () => void;
@@ -16,6 +17,7 @@ interface Props {
 
 export default function CustomerProfileSidebar({
   customer,
+  loading,
   onClose,
   onMessage,
   onAddNote,
@@ -39,6 +41,11 @@ export default function CustomerProfileSidebar({
         </div>
 
         {/* Header */}
+        {loading && (
+          <div className="mx-5 mb-2 h-1 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full w-1/2 bg-[#219e02] animate-pulse rounded-full" />
+          </div>
+        )}
         <div className="flex items-start gap-3 px-10 pb-4 border-gray-100">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
@@ -127,6 +134,18 @@ export default function CustomerProfileSidebar({
                 <span className="text-[#9CA3AF]">City:</span>
                 <span className="font-medium">{customer.city || "—"}</span>
               </div>
+              {customer.joinedAt && (
+                <div className="flex items-center gap-2 text-sm text-[#111827]">
+                  <span className="text-[#9CA3AF]">Joined:</span>
+                  <span className="font-medium">{customer.joinedAt}</span>
+                </div>
+              )}
+              {customer.lastActive && (
+                <div className="flex items-center gap-2 text-sm text-[#111827]">
+                  <span className="text-[#9CA3AF]">Last Active:</span>
+                  <span className="font-medium">{customer.lastActive}</span>
+                </div>
+              )}
             </div>
           </section>
 
@@ -134,7 +153,7 @@ export default function CustomerProfileSidebar({
             <h4 className="text-[16px] font-semibold text-[#000] mb-3">
               Order Activity
             </h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="bg-[#f7f7f7] rounded-xl p-3">
                 <p className="text-[11px] text-[#77797e] mt-0.5">Total Orders</p>
                 <p className="text-lg font-bold text-[#111827]">{customer.orders}</p>
@@ -144,7 +163,71 @@ export default function CustomerProfileSidebar({
                 <p className="text-lg font-bold text-[#111827]">{customer.lastOrderDate}</p>
               </div>
             </div>
+            {customer.recentOrders && customer.recentOrders.length > 0 && (
+              <div className="space-y-2">
+                {customer.recentOrders.slice(0, 3).map((order) => (
+                  <div key={order._id} className="flex items-center justify-between p-3 bg-[#f7f7f7] rounded-xl">
+                    <div>
+                      <p className="text-sm font-medium text-[#111827]">
+                        ₦{order.totalAmount.toLocaleString()}
+                      </p>
+                      <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                        {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        {" · "}{order.deliveryType}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                        order.status === "completed" ? "bg-[#dcfce6] text-[#219e02]"
+                        : order.status === "cancelled" ? "bg-red-100 text-red-600"
+                        : "bg-yellow-50 text-yellow-700"
+                      }`}>
+                        {order.status}
+                      </span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${
+                        order.paymentStatus === "paid" ? "bg-[#dcfce6] text-[#219e02]"
+                        : "bg-gray-100 text-gray-500"
+                      }`}>
+                        {order.paymentStatus}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
+
+          {customer.walletBalance !== undefined && (
+            <section>
+              <h4 className="text-[16px] font-semibold text-[#000] mb-2">
+                Wallet
+              </h4>
+              <div className="bg-[#dcf0d8] rounded-xl p-4 border border-[#9cc494]">
+                <p className="text-[14px] font-semibold text-[#219e02] mb-1">Balance</p>
+                <p className="text-4xl font-bold text-black">
+                  ₦{customer.walletBalance.toLocaleString()}
+                </p>
+              </div>
+            </section>
+          )}
+
+          {customer.customerNotes && customer.customerNotes.length > 0 && (
+            <section>
+              <h4 className="text-[16px] font-semibold text-[#000] mb-3">
+                Notes
+              </h4>
+              <div className="space-y-2">
+                {customer.customerNotes.map((n, i) => (
+                  <div key={i} className="p-3 bg-[#f7f7f7] rounded-xl">
+                    <p className="text-sm text-[#111827]">{n.note}</p>
+                    <p className="text-[11px] text-[#9CA3AF] mt-1">
+                      {new Date(n.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </>,

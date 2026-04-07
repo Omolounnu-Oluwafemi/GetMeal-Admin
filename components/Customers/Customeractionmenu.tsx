@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, CreditCard, FileText, Ban } from "@/lib/icons";
+import { Eye, MessageSquare, CreditCard, FileText, Ban } from "@/lib/icons";
 import { UserCheck } from "lucide-react";
 import {
   SendEmailModal,
@@ -10,8 +10,45 @@ import {
   SuspendUserModal,
   ReactivateModal,
 } from "./CustomerModals";
+import CustomerProfileSidebar from "./CustomerProfileSidebar";
+import { useCustomerById } from "@/lib/hooks/customers";
+import { mapCustomerDetail } from "@/lib/mappers/customers";
+import type { Customer } from "./Customerstable";
+
+function CustomerProfileFetcher({
+  customerId,
+  initialCustomer,
+  onClose,
+  onMessage,
+  onAddNote,
+  onSuspend,
+  onReactivate,
+}: {
+  customerId: string;
+  initialCustomer: Customer;
+  onClose: () => void;
+  onMessage: () => void;
+  onAddNote: () => void;
+  onSuspend: () => void;
+  onReactivate: () => void;
+}) {
+  const { data, isLoading } = useCustomerById(customerId);
+  const customer = data && !isLoading ? mapCustomerDetail(data) : initialCustomer;
+  return (
+    <CustomerProfileSidebar
+      customer={customer}
+      loading={isLoading}
+      onClose={onClose}
+      onMessage={onMessage}
+      onAddNote={onAddNote}
+      onSuspend={onSuspend}
+      onReactivate={onReactivate}
+    />
+  );
+}
 
 type ModalType =
+  | "view-profile"
   | "send-email"
   | "issue-credit"
   | "add-note"
@@ -20,16 +57,12 @@ type ModalType =
   | null;
 
 interface CustomerActionMenuProps {
-  customerId: string;
-  customerName: string;
-  customerStatus: "Active" | "Suspended";
+  customer: Customer;
   onClose: () => void;
 }
 
 export default function CustomerActionMenu({
-  customerId,
-  customerName,
-  customerStatus,
+  customer,
   onClose,
 }: CustomerActionMenuProps) {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -42,7 +75,18 @@ export default function CustomerActionMenu({
 
   return (
     <>
+      {!activeModal && (
+        <div className="fixed inset-0 z-[9]" onClick={onClose} />
+      )}
       <div className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+        <button
+          onClick={() => openModal("view-profile")}
+          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+        >
+          <Eye className="w-4 h-4" />
+          View Profile
+        </button>
+
         <button
           onClick={() => openModal("send-email")}
           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
@@ -69,7 +113,7 @@ export default function CustomerActionMenu({
 
         <div className="border-t border-gray-200 my-1" />
 
-        {customerStatus === "Suspended" ? (
+        {customer.status === "Suspended" ? (
           <button
             onClick={() => openModal("reactivate")}
             className="w-full px-4 py-2 text-left text-sm text-[#219e02] hover:bg-green-50 flex items-center gap-2 transition-colors"
@@ -88,20 +132,31 @@ export default function CustomerActionMenu({
         )}
       </div>
 
+      {activeModal === "view-profile" && (
+        <CustomerProfileFetcher
+          customerId={customer.id}
+          initialCustomer={customer}
+          onClose={closeModal}
+          onMessage={() => setActiveModal("send-email")}
+          onAddNote={() => setActiveModal("add-note")}
+          onSuspend={() => setActiveModal("suspend")}
+          onReactivate={() => setActiveModal("reactivate")}
+        />
+      )}
       {activeModal === "send-email" && (
-        <SendEmailModal customerId={customerId} customerName={customerName} onClose={closeModal} />
+        <SendEmailModal customerId={customer.id} customerName={customer.name} onClose={closeModal} />
       )}
       {activeModal === "issue-credit" && (
-        <IssueCreditModal customerId={customerId} customerName={customerName} onClose={closeModal} />
+        <IssueCreditModal customerId={customer.id} customerName={customer.name} onClose={closeModal} />
       )}
       {activeModal === "add-note" && (
-        <AddNoteModal customerId={customerId} customerName={customerName} onClose={closeModal} />
+        <AddNoteModal customerId={customer.id} customerName={customer.name} onClose={closeModal} />
       )}
       {activeModal === "suspend" && (
-        <SuspendUserModal customerId={customerId} customerName={customerName} onClose={closeModal} />
+        <SuspendUserModal customerId={customer.id} customerName={customer.name} onClose={closeModal} />
       )}
       {activeModal === "reactivate" && (
-        <ReactivateModal customerId={customerId} customerName={customerName} onClose={closeModal} />
+        <ReactivateModal customerId={customer.id} customerName={customer.name} onClose={closeModal} />
       )}
     </>
   );

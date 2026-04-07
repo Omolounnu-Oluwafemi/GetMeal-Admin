@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X, MessageSquare, FileText, Star } from "@/lib/icons";
 import {
@@ -11,6 +12,7 @@ import {
   Ban,
 } from "lucide-react";
 import type { Cook } from "./Cookstable";
+import CookMealsView from "./CookMealsView";
 
 interface Props {
   cook: Cook;
@@ -30,6 +32,19 @@ export default function CookProfileSidebar({
   onSuspend,
   onReactivate,
 }: Props) {
+  const [showMeals, setShowMeals] = useState(false);
+
+  if (showMeals) {
+    return createPortal(
+      <CookMealsView
+        cookId={cook.id}
+        cookName={cook.name}
+        onClose={() => setShowMeals(false)}
+      />,
+      document.body,
+    );
+  }
+
   return createPortal(
     <>
       {/* Backdrop */}
@@ -269,7 +284,10 @@ export default function CookProfileSidebar({
                 {cook.topMeal.orders} orders
               </p>
             </div>
-            <button className="text-sm text-[#219e02] hover:underline mt-6 w-full text-center">
+            <button
+              onClick={() => setShowMeals(true)}
+              className="text-sm text-[#219e02] hover:underline mt-6 w-full text-center"
+            >
               View all meals →
             </button>
           </section>

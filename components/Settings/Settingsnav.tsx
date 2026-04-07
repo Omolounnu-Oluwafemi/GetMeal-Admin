@@ -15,7 +15,7 @@ interface SettingsNavProps {
 
 const navItems = [
   { id: "profile", label: "Profile", icon: User },
-  { id: "notifications", label: "Notifications", icon: Bell },
+  // { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: Shield },
   { id: "team", label: "Team", icon: Users },
   { id: "system", label: "System", icon: SettingsIcon },

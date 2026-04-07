@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Bell, Send } from "@/lib/icons";
 
 interface NudgeCooksModalProps {
@@ -22,7 +23,7 @@ export default function NudgeCooksModal({ onClose }: NudgeCooksModalProps) {
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-[20px] w-full max-w-xl">
         {/* Header */}
@@ -158,6 +159,7 @@ export default function NudgeCooksModal({ onClose }: NudgeCooksModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -20,6 +20,11 @@ export interface Customer {
   lastOrderDays: number;
   lastOrderDate: string;
   status: "Active" | "Suspended";
+  walletBalance?: number;
+  joinedAt?: string;
+  lastActive?: string;
+  recentOrders?: { _id: string; totalAmount: number; status: string; paymentStatus: string; deliveryType: string; createdAt: string }[];
+  customerNotes?: { note: string; createdAt: string }[];
 }
 
 interface CustomersTableProps {
@@ -238,9 +243,7 @@ export default function CustomersTable({ customers, loading = false }: Customers
                 {/* Action Menu */}
                 {openMenuId === customer.id && (
                   <CustomerActionMenu
-                    customerId={customer.id}
-                    customerName={customer.name}
-                    customerStatus={customer.status}
+                    customer={customer}
                     onClose={() => setOpenMenuId(null)}
                   />
                 )}
