@@ -82,6 +82,8 @@ function CooksPageContent() {
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [openProfileId, setOpenProfileId] = useState<string | null>(null);
 
@@ -99,14 +101,18 @@ function CooksPageContent() {
     const filters: string[] = [];
     selectedStatus.forEach((status) => filters.push(`Status: ${status}`));
     selectedCities.forEach((city) => filters.push(`City: ${city}`));
+    if (dateFrom) filters.push(`From: ${dateFrom}`);
+    if (dateTo) filters.push(`To: ${dateTo}`);
     setActiveFilters(filters);
-  }, [selectedStatus, selectedCities]);
+  }, [selectedStatus, selectedCities, dateFrom, dateTo]);
 
   const { data: statsData, isLoading: statsLoading } = useCookStats();
   const { data: cooksData, isLoading: cooksLoading } = useCooks({
     status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
     city: selectedCities[0],
     sortBy,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   if (statsLoading || cooksLoading) return <PageLoader />;
@@ -118,6 +124,8 @@ function CooksPageContent() {
     setSelectedStatus([]);
     setSelectedCities([]);
     setSortBy("newest");
+    setDateFrom("");
+    setDateTo("");
     setActiveFilters([]);
   };
 
@@ -128,6 +136,10 @@ function CooksPageContent() {
     } else if (filter.startsWith("City:")) {
       const city = filter.replace("City: ", "");
       setSelectedCities(selectedCities.filter((c) => c !== city));
+    } else if (filter.startsWith("From:")) {
+      setDateFrom("");
+    } else if (filter.startsWith("To:")) {
+      setDateTo("");
     }
   };
 
@@ -175,9 +187,13 @@ function CooksPageContent() {
             selectedStatus={selectedStatus}
             selectedCities={selectedCities}
             sortBy={sortBy}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             onStatusChange={setSelectedStatus}
             onCitiesChange={setSelectedCities}
             onSortChange={setSortBy}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
             onClear={handleClearFilters}
           />
         )}

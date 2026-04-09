@@ -6,9 +6,13 @@ interface CustomersFilterPanelProps {
   selectedStatus: string[];
   selectedCities: string[];
   sortBy: string;
+  dateFrom: string;
+  dateTo: string;
   onStatusChange: (status: string[]) => void;
   onCitiesChange: (cities: string[]) => void;
   onSortChange: (sort: string) => void;
+  onDateFromChange: (date: string) => void;
+  onDateToChange: (date: string) => void;
   onClear: () => void;
 }
 
@@ -25,9 +29,13 @@ export default function CustomersFilterPanel({
   selectedStatus,
   selectedCities,
   sortBy,
+  dateFrom,
+  dateTo,
   onStatusChange,
   onCitiesChange,
   onSortChange,
+  onDateFromChange,
+  onDateToChange,
   onClear,
 }: CustomersFilterPanelProps) {
   const handleStatusToggle = (status: string) => {
@@ -56,7 +64,7 @@ export default function CustomersFilterPanel({
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-4 gap-8">
         {/* Status */}
         <div>
           <h4 className="text-xs font-medium text-gray-500 uppercase mb-3">
@@ -115,6 +123,35 @@ export default function CustomersFilterPanel({
                 <span className="text-sm text-gray-700">{city}</span>
               </label>
             ))}
+          </div>
+        </div>
+
+        {/* Date Range */}
+        <div>
+          <h4 className="text-xs font-medium text-gray-500 uppercase mb-3">
+            DATE RANGE
+          </h4>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">From</label>
+              <input
+                type="date"
+                value={dateFrom}
+                max={dateTo || undefined}
+                onChange={(e) => onDateFromChange(e.target.value)}
+                className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 accent-[#219e02] focus:outline-none focus:ring-1 focus:ring-[#219e02]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">To</label>
+              <input
+                type="date"
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(e) => onDateToChange(e.target.value)}
+                className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 accent-[#219e02] focus:outline-none focus:ring-1 focus:ring-[#219e02]"
+              />
+            </div>
           </div>
         </div>
 

@@ -39,7 +39,8 @@ export default function Header() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data: searchResults, isLoading: searchLoading } = useSearch(debouncedQuery);
+  const { data: searchResults, isLoading: searchLoading } =
+    useSearch(debouncedQuery);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,10 +78,10 @@ export default function Header() {
       );
     }
     if (pathname === "/customers") {
-      return <LinkedFilterDropdown statusOptions={["Active", "Suspended"]} />;
+      return "";
     }
     if (pathname === "/cooks") {
-      return <LinkedFilterDropdown statusOptions={["Active", "Inactive"]} />;
+      return "";
     }
     if (pathname === "/orders") {
       return <OrdersHeaderFilters />;

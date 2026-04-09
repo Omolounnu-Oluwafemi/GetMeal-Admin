@@ -65,7 +65,8 @@ export function useCustomerById(customerId: string | null) {
       return res.data.customer ?? res.data;
     },
     enabled: !!customerId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
@@ -95,7 +96,10 @@ export function useAddCustomerNote(customerId: string) {
   return useMutation({
     mutationFn: (note: string) =>
       api.post(`/api/admin/customers/${customerId}/note`, { note }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["customers"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["customer", customerId] });
+    },
   });
 }
 
@@ -118,6 +122,9 @@ export function useUpdateCustomerStatus(customerId: string) {
   return useMutation({
     mutationFn: (action: "suspend" | "activate") =>
       api.post(`/api/admin/customers/${customerId}/status`, { action }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["customers"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["customer", customerId] });
+    },
   });
 }

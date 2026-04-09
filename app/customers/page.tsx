@@ -81,19 +81,25 @@ function CustomersPageContent() {
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   useEffect(() => {
     const filters: string[] = [];
     selectedStatus.forEach((s) => filters.push(`Status: ${s}`));
     selectedCities.forEach((c) => filters.push(`City: ${c}`));
+    if (dateFrom) filters.push(`From: ${dateFrom}`);
+    if (dateTo) filters.push(`To: ${dateTo}`);
     setActiveFilters(filters);
-  }, [selectedStatus, selectedCities]);
+  }, [selectedStatus, selectedCities, dateFrom, dateTo]);
 
   const { data, isLoading } = useCustomers({
     status: selectedStatus.length === 1 ? selectedStatus[0] : undefined,
     city: selectedCities[0],
     sortBy,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   if (isLoading) return <PageLoader />;
@@ -105,6 +111,8 @@ function CustomersPageContent() {
     setSelectedStatus([]);
     setSelectedCities([]);
     setSortBy("newest");
+    setDateFrom("");
+    setDateTo("");
     setActiveFilters([]);
   };
 
@@ -115,6 +123,10 @@ function CustomersPageContent() {
     } else if (filter.startsWith("City:")) {
       const c = filter.replace("City: ", "");
       setSelectedCities(selectedCities.filter((x) => x !== c));
+    } else if (filter.startsWith("From:")) {
+      setDateFrom("");
+    } else if (filter.startsWith("To:")) {
+      setDateTo("");
     }
   };
 
@@ -187,9 +199,13 @@ function CustomersPageContent() {
             selectedStatus={selectedStatus}
             selectedCities={selectedCities}
             sortBy={sortBy}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             onStatusChange={setSelectedStatus}
             onCitiesChange={setSelectedCities}
             onSortChange={setSortBy}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
             onClear={handleClearFilters}
           />
         )}

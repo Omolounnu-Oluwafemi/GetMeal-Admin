@@ -65,6 +65,8 @@ interface CooksFilters {
   status?: string;
   city?: string;
   sortBy?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 const STATUS_MAP: Record<string, string> = {
@@ -107,6 +109,8 @@ export function useCooks(filters: CooksFilters) {
       }
 
       if (filters.city) params.city = filters.city;
+      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+      if (filters.dateTo) params.dateTo = filters.dateTo;
 
       const sortBy = filters.sortBy ?? "newest";
       if (sortBy === "pending-verification") {
