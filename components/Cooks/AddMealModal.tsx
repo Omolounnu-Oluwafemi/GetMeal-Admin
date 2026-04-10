@@ -119,9 +119,9 @@ export default function AddMealModal({ onClose }: Props) {
     fd.append("name", form.name);
     fd.append("description", form.description);
     fd.append("price", form.price);
-    fd.append("quantityLabel", form.quantityLabel);
+    if (form.quantityLabel) fd.append("quantityLabel", form.quantityLabel);
     fd.append("portionsTotal", form.portionsTotal);
-    fd.append("unitsPerQuantity", form.unitsPerQuantity);
+    fd.append("unitsPerQuantity", form.unitsPerQuantity || "1");
     fd.append("cookingDate", new Date(form.cookingDate).toISOString());
     fd.append("pickupWindow[from]", new Date(form.pickupFrom).toISOString());
     fd.append("pickupWindow[to]", new Date(form.pickupTo).toISOString());
@@ -132,8 +132,8 @@ export default function AddMealModal({ onClose }: Props) {
     images.forEach((img) => fd.append("images", img));
 
     mutate(fd, {
-      onSuccess: () => {
-        toast.success("Meal created successfully");
+      onSuccess: (res: any) => {
+        toast.success(res.message ?? "Meal created successfully");
         onClose();
       },
       onError: (err: any) =>
@@ -286,7 +286,7 @@ export default function AddMealModal({ onClose }: Props) {
               <label className="block text-sm font-semibold text-[#111827] mb-1">Units per Quantity</label>
               <input
                 type="number"
-                placeholder="e.g. 2"
+                placeholder="e.g. 2 (defaults to 1)"
                 value={form.unitsPerQuantity}
                 onChange={set("unitsPerQuantity")}
                 min="1"

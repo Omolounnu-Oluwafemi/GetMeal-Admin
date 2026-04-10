@@ -26,7 +26,7 @@ export function useCreateMeal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      const res = await api.post("/api/meals/create", formData, {
+      const res = await api.post("/api/admin/meals/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       return res.data;
