@@ -17,6 +17,7 @@ import {
   useMessageCook,
   useAddCookNote,
   useUpdateCookStatus,
+  useCookSuspendAction,
   useCreditCookWallet,
 } from "@/lib/hooks/cooks";
 
@@ -25,6 +26,7 @@ interface ModalProps {
   cookName: string;
   onClose: () => void;
   isAvailable?: boolean;
+  isApproved?: boolean;
 }
 
 /* ─── Shared Backdrop + Panel wrapper ─── */
@@ -185,12 +187,13 @@ export function SendEmailModal({ cookId, cookName, onClose }: ModalProps) {
 }
 
 /* ─── 3. Change Status Modal (setActive / setInactive based on isAvailable) ─── */
-export function ChangeStatusModal({ cookId, cookName, isAvailable = false, onClose }: ModalProps) {
+export function ChangeStatusModal({ cookId, cookName, isAvailable = false, isApproved = true, onClose }: ModalProps) {
   const { mutate, isPending } = useUpdateCookStatus(cookId);
 
-  // If currently active → set inactive; if inactive → set active
-  const settingActive = !isAvailable;
-  const action = settingActive ? "setActive" : "setInactive";
+  // If not yet approved → always setActive to approve them
+  // Otherwise toggle: active → setInactive, inactive → setActive
+  const settingActive = !isApproved || !isAvailable;
+  const action: "setActive" | "setInactive" = settingActive ? "setActive" : "setInactive";
 
   const handleChange = () => {
     mutate(
@@ -349,11 +352,11 @@ export function AddNoteModal({ cookId, cookName, onClose }: ModalProps) {
 export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
-  const { mutate, isPending } = useUpdateCookStatus(cookId);
+  const { mutate, isPending } = useCookSuspendAction(cookId);
 
   const handleActivate = () => {
     mutate(
-      { action: "activate", note, notify },
+      { action: "activate", note: note || undefined, notifyCook: notify },
       {
         onSuccess: (res: any) => {
           toast.success(res.data.message);
@@ -460,11 +463,11 @@ export function SuspendCookModal({ cookId, cookName, onClose }: ModalProps) {
   const [note, setNote] = useState("");
   const [notify, setNotify] = useState(true);
   const [reasonOpen, setReasonOpen] = useState(false);
-  const { mutate, isPending } = useUpdateCookStatus(cookId);
+  const { mutate, isPending } = useCookSuspendAction(cookId);
 
   const handleSuspend = () => {
     mutate(
-      { action: "suspend", reason, note, notify },
+      { action: "suspend", reason, note: note || undefined, notifyCook: notify },
       {
         onSuccess: (res: any) => {
           toast.success(res.data.message);

@@ -176,7 +176,7 @@ export default function CookActionMenu({ cook, onClose }: CookActionMenuProps) {
         <SendEmailModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />
       )}
       {activeModal === "change-status" && (
-        <ChangeStatusModal cookId={cook.id} cookName={cook.name} isAvailable={cook.isAvailable} onClose={closeModal} />
+        <ChangeStatusModal cookId={cook.id} cookName={cook.name} isAvailable={cook.isAvailable} isApproved={cook.isApproved} onClose={closeModal} />
       )}
       {activeModal === "add-note" && (
         <AddNoteModal cookId={cook.id} cookName={cook.name} onClose={closeModal} />

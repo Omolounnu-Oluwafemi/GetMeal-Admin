@@ -26,6 +26,7 @@ export interface ApiCook {
   availableForCooking?: string;
   isAvailable: boolean;
   isApproved: boolean;
+  isSuspended: boolean;
   status?: string;
   rating: number;
   reviewsCount?: number;
@@ -160,13 +161,28 @@ export function useAddCookNote(cookId: string) {
   });
 }
 
+// setActive | setInactive
 export function useUpdateCookStatus(cookId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { action: string; reason?: string; note?: string; notify?: boolean }) =>
+    mutationFn: (data: { action: "setActive" | "setInactive" }) =>
       api.post(`/api/admin/cooks/${cookId}/status`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cooks"] });
+      queryClient.invalidateQueries({ queryKey: ["cook", cookId] });
+    },
+  });
+}
+
+// suspend | activate (from suspension)
+export function useCookSuspendAction(cookId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { action: "suspend" | "activate"; reason?: string; note?: string; notifyCook?: boolean }) =>
+      api.post(`/api/admin/cooks/${cookId}/suspend`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cooks"] });
+      queryClient.invalidateQueries({ queryKey: ["cook", cookId] });
     },
   });
 }

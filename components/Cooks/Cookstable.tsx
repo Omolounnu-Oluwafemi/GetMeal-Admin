@@ -53,6 +53,7 @@ export interface Cook {
   status: "Active" | "Inactive" | "Suspended";
   isAvailable: boolean;
   isApproved: boolean;
+  isSuspended: boolean;
   walletBalance: number;
   reviewsCount: number;
   bankDetails?: { bankName?: string; accountNumber?: string; accountName?: string; bankCode?: string } | null;

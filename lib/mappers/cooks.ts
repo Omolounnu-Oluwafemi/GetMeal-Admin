@@ -21,7 +21,7 @@ export function mapCook(c: ApiCook): Cook {
   // Single endpoint uses cookName; list endpoint uses name
   const displayName = c.cookName ?? c.name ?? "—";
   let status: "Active" | "Inactive" | "Suspended" = "Inactive";
-  if (c.status === "suspended") status = "Suspended";
+  if (c.isSuspended) status = "Suspended";
   else if (c.isAvailable) status = "Active";
 
   // Phone/email: prefer userId object if available
@@ -73,6 +73,7 @@ export function mapCook(c: ApiCook): Cook {
     status,
     isAvailable: c.isAvailable,
     isApproved: c.isApproved,
+    isSuspended: c.isSuspended ?? false,
     walletBalance: c.walletBalance ?? 0,
     reviewsCount: c.reviewsCount ?? 0,
     bankDetails: c.bankDetails ?? null,
