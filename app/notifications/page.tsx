@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -13,11 +13,7 @@ import {
   ChevronDown,
   Filter,
 } from "@/lib/icons";
-import {
-  notifications as allNotifications,
-  type Notification,
-  type NotifType,
-} from "@/lib/notificationsData";
+import { useNotifications, type Notification, type NotifType } from "@/lib/hooks/notifications";
 import { Check, CheckCheck } from "lucide-react";
 
 function NotifIcon({ type }: { type: NotifType }) {
@@ -42,6 +38,20 @@ function NotifIcon({ type }: { type: NotifType }) {
       </div>
     );
   }
+  if (type === "customer") {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <CheckCircle className="w-4 h-4 text-blue-500" />
+      </div>
+    );
+  }
+  if (type === "cook") {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+        <AlertCircle className="w-4 h-4 text-amber-500" />
+      </div>
+    );
+  }
   return (
     <div className="w-10 h-10 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0">
       <AlertCircle className="w-4 h-4 text-purple-500" />
@@ -50,7 +60,7 @@ function NotifIcon({ type }: { type: NotifType }) {
 }
 
 type Tab = "all" | "unread" | "read";
-type TypeFilter = "all" | "order" | "alert" | "system" | "payment";
+type TypeFilter = "all" | "order" | "alert" | "system" | "payment" | "customer" | "cook";
 type TimeFilter = "all" | "today" | "7days" | "30days";
 
 const typeOptions: { value: TypeFilter; label: string }[] = [
@@ -58,7 +68,9 @@ const typeOptions: { value: TypeFilter; label: string }[] = [
   { value: "order", label: "Orders" },
   { value: "alert", label: "Alerts" },
   { value: "system", label: "System" },
-  { value: "payment", label: "Info" },
+  { value: "payment", label: "Payment" },
+  { value: "customer", label: "Customer" },
+  { value: "cook", label: "Cook" },
 ];
 
 const timeOptions: { value: TimeFilter; label: string }[] = [
@@ -73,15 +85,22 @@ export default function NotificationsPage() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [notifs, setNotifs] = useState<Notification[]>(allNotifications);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [typeOpen, setTypeOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
 
+  const { data: fetchedNotifs = [], isLoading } = useNotifications();
+  const [notifs, setNotifs] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    setNotifs(fetchedNotifs);
+  }, [fetchedNotifs]);
+
   const total = notifs.length;
   const unreadCount = notifs.filter((n) => !n.read).length;
-  const todayCount = notifs.length; // all are "today" in mock data
+  const today = new Date().toDateString();
+  const todayCount = notifs.filter((n) => new Date(n.createdAt).toDateString() === today).length;
 
   const filtered = notifs.filter((n) => {
     const matchesTab =
@@ -127,6 +146,12 @@ export default function NotificationsPage() {
     setNotifs((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
+  };
+
+  const handleView = (n: Notification) => {
+    markAsRead(n.id);
+    if (n.linkedUserId) router.push(`/customers?openProfile=${n.linkedUserId}`);
+    else if (n.linkedCookId) router.push(`/cooks?openProfile=${n.linkedCookId}`);
   };
 
   const tabs: { key: Tab; label: string; count: number }[] = [
@@ -322,7 +347,20 @@ export default function NotificationsPage() {
           </span>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-4 px-5 py-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-4 animate-pulse">
+                <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 bg-gray-200 rounded w-1/3" />
+                  <div className="h-3 bg-gray-200 rounded w-full" />
+                  <div className="h-3 bg-gray-100 rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="py-16 text-center text-sm text-[#9CA3AF]">
             No notifications found
           </div>
@@ -370,15 +408,24 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              {/* Mark as read */}
-              {!n.read && (
-                <button
-                  onClick={() => markAsRead(n.id)}
-                  className="flex-shrink-0 text-sm text-[#6B7280] hover:text-[#111827] transition-colors whitespace-nowrap"
-                >
-                  Mark as read
-                </button>
-              )}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                {!n.read && (
+                  <button
+                    onClick={() => markAsRead(n.id)}
+                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors whitespace-nowrap"
+                  >
+                    Mark as read
+                  </button>
+                )}
+                {(n.linkedUserId || n.linkedCookId) && (
+                  <button
+                    onClick={() => handleView(n)}
+                    className="text-sm font-medium text-[#209d01] hover:underline whitespace-nowrap"
+                  >
+                    View {n.linkedUserId ? "Customer" : "Cook"}
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

@@ -4,7 +4,11 @@ import api from "@/lib/api";
 interface BroadcastPayload {
   title: string;
   body: string;
-  type: string;
+  type: "system" | "order" | "payment" | "promo" | "alert";
+  target: "all" | "customers" | "cooks" | "admins" | "specific" | "zones";
+  userIds?: string[];
+  zones?: string[];
+  pushOnly?: boolean;
   data?: Record<string, unknown>;
 }
 

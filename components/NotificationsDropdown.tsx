@@ -10,11 +10,8 @@ import {
   AlertCircle,
   ClockIcon,
 } from "@/lib/icons";
-import { useState } from "react";
-import {
-  notifications as initialNotifications,
-  type NotifType,
-} from "@/lib/notificationsData";
+import { useState, useEffect } from "react";
+import { useNotifications, type NotifType, type Notification } from "@/lib/hooks/notifications";
 import { CheckCheck } from "lucide-react";
 
 interface Props {
@@ -43,6 +40,20 @@ function NotifIcon({ type }: { type: NotifType }) {
       </div>
     );
   }
+  if (type === "customer") {
+    return (
+      <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <CheckCircle className="w-4 h-4 text-blue-500" />
+      </div>
+    );
+  }
+  if (type === "cook") {
+    return (
+      <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+        <AlertCircle className="w-4 h-4 text-amber-500" />
+      </div>
+    );
+  }
   return (
     <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
       <AlertCircle className="w-4 h-4 text-purple-500" />
@@ -52,7 +63,12 @@ function NotifIcon({ type }: { type: NotifType }) {
 
 export default function NotificationsDropdown({ onClose }: Props) {
   const router = useRouter();
-  const [notifs, setNotifs] = useState(initialNotifications);
+  const { data: fetchedNotifs = [], isLoading } = useNotifications();
+  const [notifs, setNotifs] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    setNotifs(fetchedNotifs);
+  }, [fetchedNotifs]);
 
   const unreadCount = notifs.filter((n) => !n.read).length;
 
@@ -60,6 +76,13 @@ export default function NotificationsDropdown({ onClose }: Props) {
     setNotifs((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
+
+  const handleView = (n: Notification) => {
+    markAsRead(n.id);
+    onClose();
+    if (n.linkedUserId) router.push(`/customers?openProfile=${n.linkedUserId}`);
+    else if (n.linkedCookId) router.push(`/cooks?openProfile=${n.linkedCookId}`);
+  };
 
   const markAllAsRead = () =>
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -111,34 +134,61 @@ export default function NotificationsDropdown({ onClose }: Props) {
           className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
-          {notifs.map((n) => (
-            <div
-              key={n.id}
-              onClick={() => markAsRead(n.id)}
-              className={`flex gap-3 px-5 py-4 border-b border-gray-50 last:border-0 cursor-pointer transition-colors ${
-                !n.read ? "bg-[#f5faf3] hover:bg-[#edf7ea]" : "hover:bg-gray-50"
-              }`}
-            >
-              <NotifIcon type={n.type} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-[#111827] leading-snug line-clamp-1">
-                    {n.title}
-                  </span>
-                  {!n.read && (
-                    <span className="w-2 h-2 rounded-full bg-[#209d01] flex-shrink-0" />
-                  )}
+          {isLoading ? (
+            <div className="flex flex-col gap-3 px-5 py-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3 animate-pulse">
+                  <div className="w-9 h-9 rounded-xl bg-gray-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-gray-200 rounded w-2/3" />
+                    <div className="h-3 bg-gray-200 rounded w-full" />
+                    <div className="h-2 bg-gray-100 rounded w-1/4" />
+                  </div>
                 </div>
-                <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">
-                  {n.description}
-                </p>
-                <div className="flex items-center gap-1 mt-1.5">
-                  <ClockIcon className="w-3 h-3 text-[#9CA3AF]" />
-                  <span className="text-[11px] text-[#9CA3AF]">{n.time}</span>
+              ))}
+            </div>
+          ) : notifs.length === 0 ? (
+            <div className="py-10 text-center text-sm text-[#9CA3AF]">No notifications</div>
+          ) : (
+            notifs.map((n) => (
+              <div
+                key={n.id}
+                onClick={() => markAsRead(n.id)}
+                className={`flex gap-3 px-5 py-4 border-b border-gray-50 last:border-0 cursor-pointer transition-colors ${
+                  !n.read ? "bg-[#f5faf3] hover:bg-[#edf7ea]" : "hover:bg-gray-50"
+                }`}
+              >
+                <NotifIcon type={n.type} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <span className="text-sm font-semibold text-[#111827] leading-snug line-clamp-1">
+                      {n.title}
+                    </span>
+                    {!n.read && (
+                      <span className="w-2 h-2 rounded-full bg-[#209d01] flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">
+                    {n.description}
+                  </p>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <div className="flex items-center gap-1">
+                      <ClockIcon className="w-3 h-3 text-[#9CA3AF]" />
+                      <span className="text-[11px] text-[#9CA3AF]">{n.time}</span>
+                    </div>
+                    {(n.linkedUserId || n.linkedCookId) && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleView(n); }}
+                        className="text-[11px] font-medium text-[#209d01] hover:underline"
+                      >
+                        View {n.linkedUserId ? "Customer" : "Cook"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Footer */}
