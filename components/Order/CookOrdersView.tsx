@@ -362,25 +362,27 @@ export default function CookOrdersView({
                               <img
                                 src={order.image}
                                 alt={order.meal}
-                                className="w-10 h-10 rounded-lg object-cover"
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                                 <Package className="w-5 h-5 text-gray-400" />
                               </div>
                             )}
-                            <span
-                              className="text-sm font-medium text-gray-900 max-w-[160px] truncate"
-                              title={order.meal}
-                            >
-                              {order.meal}
-                              {order.items > 0 && (
-                                <span className="text-gray-400">
-                                  {" "}
-                                  +{order.items}
-                                </span>
-                              )}
-                            </span>
+                            <div className="relative group max-w-[160px]">
+                              <span className="text-sm font-medium text-gray-900 block truncate">
+                                {order.meal}
+                                {order.items > 0 && (
+                                  <span className="text-gray-400"> +{order.items}</span>
+                                )}
+                              </span>
+                              <div className="absolute bottom-[calc(100%+6px)] left-0 z-50 hidden group-hover:block">
+                                <div className="bg-white text-gray-800 text-xs rounded-lg px-3 py-2 whitespace-nowrap max-w-[280px] shadow-lg border border-gray-200">
+                                  {order.meal}
+                                  <div className="absolute top-full left-4 border-4 border-transparent border-t-white" />
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
