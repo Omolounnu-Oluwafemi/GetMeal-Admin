@@ -182,11 +182,16 @@ export function useCreateCook() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
-      name: string;
+      fullName: string;
       email: string;
       phone: string;
       address: string;
-    }) => api.post("/api/admin/cooks", data),
+      experience: string;
+      startImmediately: boolean;
+      availableDate?: string;
+      referralCode?: string;
+      notifyUser?: boolean;
+    }) => api.post("/api/admin/cooks/create", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cooks"] });
       queryClient.invalidateQueries({ queryKey: ["cook-stats"] });

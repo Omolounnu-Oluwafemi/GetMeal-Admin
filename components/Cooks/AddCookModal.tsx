@@ -16,18 +16,28 @@ interface FormState {
   name: string;
   email: string;
   phone: string;
+  experience: string;
   state: string;
   lga: string;
   city: string;
+  referralCode: string;
+  startImmediately: boolean;
+  availableDate: string;
+  notifyUser: boolean;
 }
 
 const INITIAL: FormState = {
   name: "",
   email: "",
   phone: "",
+  experience: "",
   state: "",
   lga: "",
   city: "",
+  referralCode: "",
+  startImmediately: true,
+  availableDate: "",
+  notifyUser: true,
 };
 
 function SelectField({
@@ -79,9 +89,11 @@ function SelectField({
   );
 }
 
+type FormErrors = Partial<Record<keyof FormState, string>>;
+
 export default function AddCookModal({ onClose }: Props) {
   const [form, setForm] = useState<FormState>(INITIAL);
-  const [errors, setErrors] = useState<Partial<FormState>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const { mutate, isPending } = useCreateCook();
 
   const states: string[] = useMemo(() => getStates(), []);
@@ -97,15 +109,13 @@ export default function AddCookModal({ onClose }: Props) {
 
   const set = (field: keyof FormState) => (value: string) => {
     setForm((f) => {
-      const next = { ...f, [field]: value };
-      // Reset downstream selects
-      if (field === "state") {
-        next.lga = "";
-        next.city = "";
+      let parsed: string | boolean = value;
+      if (field === "startImmediately" || field === "notifyUser") {
+        parsed = value === "true";
       }
-      if (field === "lga") {
-        next.city = "";
-      }
+      const next = { ...f, [field]: parsed };
+      if (field === "state") { next.lga = ""; next.city = ""; }
+      if (field === "lga") { next.city = ""; }
       return next;
     });
     setErrors((e) => ({ ...e, [field]: undefined }));
@@ -115,16 +125,19 @@ export default function AddCookModal({ onClose }: Props) {
     (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
       set(field)(e.target.value);
 
-  const validate = (): Partial<FormState> => {
-    const e: Partial<FormState> = {};
+  const validate = (): FormErrors => {
+    const e: FormErrors = {};
     if (!form.name.trim()) e.name = "Name is required";
     if (!form.email.trim()) e.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       e.email = "Enter a valid email";
     if (!form.phone.trim()) e.phone = "Phone number is required";
+    if (!form.experience.trim()) e.experience = "Experience is required";
     if (!form.state) e.state = "State is required";
     if (!form.lga) e.lga = "LGA is required";
     if (!form.city) e.city = "City / Town is required";
+    if (!form.startImmediately && !form.availableDate)
+      e.availableDate = "Available date is required when not starting immediately";
     return e;
   };
 
@@ -139,10 +152,20 @@ export default function AddCookModal({ onClose }: Props) {
     const address = `${form.city}, ${form.lga}, ${form.state}, Nigeria`;
 
     mutate(
-      { name: form.name, email: form.email, phone: form.phone, address },
       {
-        onSuccess: () => {
-          toast.success("Cook added successfully");
+        fullName: form.name,
+        email: form.email,
+        phone: form.phone,
+        address,
+        experience: form.experience,
+        startImmediately: form.startImmediately,
+        availableDate: form.startImmediately ? undefined : form.availableDate,
+        referralCode: form.referralCode || undefined,
+        notifyUser: form.notifyUser,
+      },
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message ?? "Cook added successfully");
           onClose();
         },
         onError: (err: any) =>
@@ -234,6 +257,57 @@ export default function AddCookModal({ onClose }: Props) {
             </div>
           </div>
 
+          {/* Experience */}
+          <div>
+            <label className="block text-sm font-semibold text-[#111827] mb-1">
+              Cooking Experience <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 5 years"
+              value={form.experience}
+              onChange={setInput("experience")}
+              className={`w-full px-4 py-2.5 rounded-xl border text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#219e02]/20 focus:border-[#219e02] transition-all ${errors.experience ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-[#f9fafb]"}`}
+            />
+            {errors.experience && (
+              <p className="text-xs text-red-500 mt-1">{errors.experience}</p>
+            )}
+          </div>
+
+          {/* Start Immediately toggle */}
+          <div className="flex items-center justify-between p-4 bg-[#f9fafb] rounded-xl border border-[#E5E7EB]">
+            <div>
+              <p className="text-sm font-semibold text-[#111827]">Start Immediately</p>
+              <p className="text-xs text-[#6B7280]">Cook is available to start right away</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => set("startImmediately")(form.startImmediately ? "false" : "true")}
+              className={`relative w-11 h-6 rounded-full transition-colors ${form.startImmediately ? "bg-[#219e02]" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.startImmediately ? "translate-x-5" : ""}`} />
+            </button>
+          </div>
+
+          {/* Available Date (shown only when not starting immediately) */}
+          {!form.startImmediately && (
+            <div>
+              <label className="block text-sm font-semibold text-[#111827] mb-1">
+                Available From <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={form.availableDate}
+                onChange={setInput("availableDate")}
+                min={new Date().toISOString().slice(0, 16)}
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#219e02]/20 focus:border-[#219e02] transition-all ${errors.availableDate ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-[#f9fafb]"}`}
+              />
+              {errors.availableDate && (
+                <p className="text-xs text-red-500 mt-1">{errors.availableDate}</p>
+              )}
+            </div>
+          )}
+
           {/* Location section */}
           <div className="border border-[#E5E7EB] rounded-xl p-4 space-y-4">
             <p className="text-sm font-semibold text-[#111827]">Location</p>
@@ -271,6 +345,35 @@ export default function AddCookModal({ onClose }: Props) {
               disabled={!form.lga}
               error={errors.city}
             />
+          </div>
+
+          {/* Referral Code (optional) */}
+          <div>
+            <label className="block text-sm font-semibold text-[#111827] mb-1">
+              Referral Code <span className="text-[#6B7280] font-normal">(optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. REF12345"
+              value={form.referralCode}
+              onChange={setInput("referralCode")}
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-[#f9fafb] text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#219e02]/20 focus:border-[#219e02] transition-all"
+            />
+          </div>
+
+          {/* Notify User toggle */}
+          <div className="flex items-center justify-between p-4 bg-[#f9fafb] rounded-xl border border-[#E5E7EB]">
+            <div>
+              <p className="text-sm font-semibold text-[#111827]">Notify Cook</p>
+              <p className="text-xs text-[#6B7280]">Send account creation email to the cook</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => set("notifyUser")(form.notifyUser ? "false" : "true")}
+              className={`relative w-11 h-6 rounded-full transition-colors ${form.notifyUser ? "bg-[#219e02]" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.notifyUser ? "translate-x-5" : ""}`} />
+            </button>
           </div>
 
           {/* Footer */}
