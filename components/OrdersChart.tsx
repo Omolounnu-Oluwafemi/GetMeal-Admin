@@ -225,7 +225,7 @@ export default function OrdersChart({
           </div>
         ) : activeTab === "volume" ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={volumeData} barGap={0} barCategoryGap="5%">
+            <BarChart data={volumeData} barCategoryGap="15%">
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#E5E7EB"
@@ -244,7 +244,7 @@ export default function OrdersChart({
               />
               <Tooltip
                 content={<CustomOrderTooltip />}
-                cursor={{ fill: "transparent" }}
+                cursor={{ fill: "#F9FAFB" }}
               />
               <Legend
                 wrapperStyle={{ paddingTop: "20px" }}
@@ -257,14 +257,17 @@ export default function OrdersChart({
                   );
                 }}
               />
-              {activeStatuses.map((s) => (
+              {activeStatuses.map((s, i) => (
                 <Bar
                   key={s.key}
                   dataKey={s.key}
                   name={s.key}
                   fill={s.fill}
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={40}
+                  stackId="orders"
+                  radius={
+                    i === activeStatuses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
+                  }
+                  maxBarSize={60}
                 />
               ))}
             </BarChart>
