@@ -1,11 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X, User, ChefHat, DollarSign, Phone } from "@/lib/icons";
 import { CreditCard, Package, Receipt, RefreshCw } from "lucide-react";
 import { usePaymentById } from "@/lib/hooks/payments";
-import { useRefundPayment } from "@/lib/hooks/payments";
-import { toast } from "sonner";
+import RefundModal from "@/components/Payments/RefundModal";
 
 interface PaymentDetailsSidebarProps {
   paymentId: string;
@@ -35,17 +35,7 @@ function capitalize(s: string) {
 
 export default function PaymentDetailsSidebar({ paymentId, onClose }: PaymentDetailsSidebarProps) {
   const { data: payment, isLoading } = usePaymentById(paymentId);
-  const { mutate: refund, isPending: refunding } = useRefundPayment(paymentId);
-
-  const handleRefund = () => {
-    refund(
-      { reason: "Admin initiated refund" },
-      {
-        onSuccess: () => toast.success("Refund initiated successfully"),
-        onError: (e: any) => toast.error(e?.response?.data?.message ?? "Failed to initiate refund"),
-      }
-    );
-  };
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   const createdAt = payment
     ? new Date(payment.createdAt).toLocaleString("en-GB", {
@@ -232,12 +222,11 @@ export default function PaymentDetailsSidebar({ paymentId, onClose }: PaymentDet
             {/* Refund Action */}
             {payment.paymentStatus === "paid" && (
               <button
-                onClick={handleRefund}
-                disabled={refunding}
-                className="w-full flex items-center justify-center gap-2 py-3 border border-red-200 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setShowRefundModal(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 border border-red-200 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors"
               >
-                <RefreshCw className={`w-4 h-4 ${refunding ? "animate-spin" : ""}`} />
-                {refunding ? "Processing..." : "Initiate Refund"}
+                <RefreshCw className="w-4 h-4" />
+                Initiate Refund
               </button>
             )}
           </div>
@@ -247,6 +236,9 @@ export default function PaymentDetailsSidebar({ paymentId, onClose }: PaymentDet
           </div>
         )}
       </div>
+      {showRefundModal && (
+        <RefundModal paymentId={paymentId} onClose={() => setShowRefundModal(false)} />
+      )}
     </>,
     document.body
   );

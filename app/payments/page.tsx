@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import FilterBar from "@/components/Filterbar";
 import PaymentsFilterPanel from "@/components/Payments/Paymentsfilterpanel";
 import PaymentsTable, { Payment } from "@/components/Payments/Paymentstable";
@@ -10,12 +10,23 @@ import { exportCSV } from "@/lib/exportCSV";
 import PageLoader from "@/components/PageLoader";
 
 const AVATAR_COLORS = [
-  "#8B4513", "#9333EA", "#219e02", "#2563EB",
-  "#DC2626", "#D97706", "#0891B2", "#7C3AED",
+  "#8B4513",
+  "#9333EA",
+  "#219e02",
+  "#2563EB",
+  "#DC2626",
+  "#D97706",
+  "#0891B2",
+  "#7C3AED",
 ];
 
 function getInitials(name: string) {
-  return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }
 
 function getAvatarColor(id: string) {
@@ -23,14 +34,19 @@ function getAvatarColor(id: string) {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
 
-function mapPaymentStatus(paymentStatus: string): "Paid" | "Pending" | "Failed" | "Refunded" {
+function mapPaymentStatus(
+  paymentStatus: string,
+): "Paid" | "Pending" | "Failed" | "Refunded" {
   if (paymentStatus === "paid") return "Paid";
   if (paymentStatus === "refunded") return "Refunded";
   if (paymentStatus === "failed") return "Failed";
   return "Pending";
 }
 
-function mapPayment(p: ApiPayment, cookMap: Record<string, string> = {}): Payment {
+function mapPayment(
+  p: ApiPayment,
+  cookMap: Record<string, string> = {},
+): Payment {
   const customerName = p.userId?.fullName ?? "Unknown";
   const customerId = p.userId?._id ?? p._id;
   const date = new Date(p.createdAt);
@@ -52,8 +68,15 @@ function mapPayment(p: ApiPayment, cookMap: Record<string, string> = {}): Paymen
       ? p.deliveryType.charAt(0).toUpperCase() + p.deliveryType.slice(1)
       : "—",
     status: mapPaymentStatus(p.paymentStatus),
-    date: date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-    time: date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    date: date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    time: date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     timestamp: date.getTime(),
   };
 }
@@ -64,9 +87,26 @@ export default function PaymentsPage() {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const filterSectionRef = useRef<HTMLDivElement>(null);
 
-  const { data: statsData, isLoading: statsLoading } = usePaymentStats({ status: selectedStatus, sortBy });
-  const { data: paymentsData, isLoading: paymentsLoading } = usePayments({ status: selectedStatus, sortBy });
+  useEffect(() => {
+    if (!showFilters) return;
+    const handler = (e: MouseEvent) => {
+      if (filterSectionRef.current?.contains(e.target as Node)) return;
+      setShowFilters(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showFilters]);
+
+  const { data: statsData, isLoading: statsLoading } = usePaymentStats({
+    status: selectedStatus,
+    sortBy,
+  });
+  const { data: paymentsData, isLoading: paymentsLoading } = usePayments({
+    status: selectedStatus,
+    sortBy,
+  });
 
   useEffect(() => {
     const filters: string[] = [];
@@ -100,7 +140,10 @@ export default function PaymentsPage() {
         <PaymentStatCard
           label="Total Revenue"
           value={stats ? `₦${stats.totalRevenue.toLocaleString()}` : "₦0"}
-          change={{ value: stats?.revenueChange ?? 0, isPositive: (stats?.revenueChange ?? 0) >= 0 }}
+          change={{
+            value: stats?.revenueChange ?? 0,
+            isPositive: (stats?.revenueChange ?? 0) >= 0,
+          }}
           loading={statsLoading}
         />
         <PaymentStatCard
@@ -113,7 +156,10 @@ export default function PaymentsPage() {
         <PaymentStatCard
           label="Failed Payments"
           value={stats?.failedPayments ?? 0}
-          change={{ value: stats?.failedChange ?? 0, isPositive: (stats?.failedChange ?? 0) <= 0 }}
+          change={{
+            value: stats?.failedChange ?? 0,
+            isPositive: (stats?.failedChange ?? 0) <= 0,
+          }}
           loading={statsLoading}
         />
         <PaymentStatCard
@@ -125,7 +171,8 @@ export default function PaymentsPage() {
         />
       </div>
 
-      <div className="overflow-hidden">
+      <div className="overflow-hidden py-3">
+        <div ref={filterSectionRef}>
         <FilterBar
           showFilters={showFilters}
           activeFilters={activeFilters}
@@ -134,8 +181,24 @@ export default function PaymentsPage() {
           onExport={() =>
             exportCSV(
               "payments.csv",
-              ["Reference", "Customer", "Amount", "Delivery", "Order Status", "Payment Status", "Date"],
-              payments.map((p) => [p.orderId, p.customer.name, p.amountValue, p.method, p.status, p.status, p.date])
+              [
+                "Reference",
+                "Customer",
+                "Amount",
+                "Delivery",
+                "Order Status",
+                "Payment Status",
+                "Date",
+              ],
+              payments.map((p) => [
+                p.orderId,
+                p.customer.name,
+                p.amountValue,
+                p.method,
+                p.status,
+                p.status,
+                p.date,
+              ]),
             )
           }
         />
@@ -151,6 +214,7 @@ export default function PaymentsPage() {
             onClear={handleClearFilters}
           />
         )}
+        </div>
 
         <PaymentsTable payments={payments} loading={paymentsLoading} />
 

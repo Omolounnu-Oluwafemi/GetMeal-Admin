@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, MoreVertical } from "@/lib/icons";
 import Pagination from "@/components/Pagination";
 import PaymentDetailsSidebar from "./PaymentDetailsSidebar";
 
 const PAGE_SIZE = 10;
 import { toast } from "sonner";
-import { useRefundPayment } from "@/lib/hooks/payments";
 import api from "@/lib/api";
+import RefundModal from "@/components/Payments/RefundModal";
 import { downloadPaymentReceipt } from "@/lib/downloadReceipt";
 
 export interface Payment {
@@ -71,43 +71,28 @@ function StatusIcon({ status }: { status: string }) {
   return null;
 }
 
-function RefundButton({ paymentId, onClose }: { paymentId: string; onClose: () => void }) {
-  const { mutate, isPending } = useRefundPayment(paymentId);
-
-  const handleRefund = () => {
-    mutate(
-      { reason: "Admin initiated refund" },
-      {
-        onSuccess: (res: any) => {
-          toast.success(res.data.message);
-          onClose();
-        },
-        onError: (e: any) =>
-          toast.error(e?.response?.data?.message ?? "Failed to initiate refund."),
-      },
-    );
-  };
-
-  return (
-    <button
-      onClick={handleRefund}
-      disabled={isPending}
-      className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
-    >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-      {isPending ? "Processing..." : "Initiate Refund"}
-    </button>
-  );
-}
-
 export default function PaymentsTable({ payments, loading = false }: PaymentsTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [refundPaymentId, setRefundPaymentId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const menuButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const menuDropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e: MouseEvent) => {
+      const btn = menuButtonRefs.current[openMenuId];
+      const dropdown = menuDropdownRefs.current[openMenuId];
+      if (btn?.contains(e.target as Node)) return;
+      if (dropdown?.contains(e.target as Node)) return;
+      setOpenMenuId(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuId]);
 
   const handleDownloadReceipt = async (paymentId: string) => {
     setDownloadingId(paymentId);
@@ -249,6 +234,7 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
 
                 <td className="px-6 py-4 whitespace-nowrap text-right relative">
                   <button
+                    ref={(el) => { menuButtonRefs.current[payment.id] = el; }}
                     onClick={() => setOpenMenuId(openMenuId === payment.id ? null : payment.id)}
                     className="p-1 hover:bg-gray-100 rounded transition-colors"
                   >
@@ -256,7 +242,7 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
                   </button>
 
                   {openMenuId === payment.id && (
-                    <div className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                    <div ref={(el) => { menuDropdownRefs.current[payment.id] = el; }} className="absolute right-6 top-12 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
                       <button
                         onClick={() => {
                           setSelectedPaymentId(payment.id);
@@ -287,10 +273,15 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
                       {payment.status === "Paid" && (
                         <>
                           <div className="border-t border-gray-200 my-1" />
-                          <RefundButton
-                            paymentId={payment.id}
-                            onClose={() => setOpenMenuId(null)}
-                          />
+                          <button
+                            onClick={() => { setRefundPaymentId(payment.id); setOpenMenuId(null); }}
+                            className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Initiate Refund
+                          </button>
                         </>
                       )}
                     </div>
@@ -307,6 +298,12 @@ export default function PaymentsTable({ payments, loading = false }: PaymentsTab
       <PaymentDetailsSidebar
         paymentId={selectedPaymentId}
         onClose={() => setSelectedPaymentId(null)}
+      />
+    )}
+    {refundPaymentId && (
+      <RefundModal
+        paymentId={refundPaymentId}
+        onClose={() => setRefundPaymentId(null)}
       />
     )}
     </>
