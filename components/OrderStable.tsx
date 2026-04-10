@@ -77,12 +77,14 @@ export default function OrdersTable({
   const [openMenu, setOpenMenu] = useState<{ orderId: string; top: number; right: number } | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const menuButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const menuPanelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!openMenu) return;
     const handler = (e: MouseEvent) => {
       const btn = menuButtonRefs.current[openMenu.orderId];
       if (btn && btn.contains(e.target as Node)) return;
+      if (menuPanelRef.current && menuPanelRef.current.contains(e.target as Node)) return;
       setOpenMenu(null);
     };
     document.addEventListener("mousedown", handler);
@@ -447,6 +449,7 @@ export default function OrdersTable({
 
       {openMenu && createPortal(
         <div
+          ref={menuPanelRef}
           className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[200]"
           style={{ top: openMenu.top, right: openMenu.right }}
         >

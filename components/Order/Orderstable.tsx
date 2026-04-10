@@ -34,6 +34,7 @@ interface MenuState {
 export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
   const [openMenu, setOpenMenu] = useState<MenuState | null>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const menuPanelRef = useRef<HTMLDivElement | null>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
     const handler = (e: MouseEvent) => {
       const btn = buttonRefs.current[openMenu.orderId];
       if (btn && btn.contains(e.target as Node)) return;
+      if (menuPanelRef.current && menuPanelRef.current.contains(e.target as Node)) return;
       setOpenMenu(null);
     };
     document.addEventListener("mousedown", handler);
@@ -143,6 +145,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
 
       {openMenu && createPortal(
         <div
+          ref={menuPanelRef}
           className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[200]"
           style={{ top: openMenu.top, right: openMenu.right }}
         >
