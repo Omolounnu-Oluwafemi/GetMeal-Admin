@@ -1,14 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Save } from "@/lib/icons";
+import { useProfile, useUpdateProfile } from "@/lib/hooks/profile";
+import { toast } from "sonner";
 
-interface NotificationToggle {
-  id: string;
-  label: string;
-  description: string;
-  enabled: boolean;
-}
 
 function CustomCheckbox({
   checked,
@@ -52,72 +48,49 @@ function CustomCheckbox({
 }
 
 export function NotificationSettings() {
-  const [emailEnabled, setEmailEnabled] = useState(true);
-  const [alerts, setAlerts] = useState<NotificationToggle[]>([
-    {
-      id: "order-alerts",
-      label: "Order Alerts",
-      description: "New orders, cancellations, completions",
-      enabled: true,
-    },
-    {
-      id: "cook-alerts",
-      label: "Cook Alerts",
-      description: "Cook registrations, suspensions, complaints",
-      enabled: true,
-    },
-    {
-      id: "customer-alerts",
-      label: "Customer Alerts",
-      description: "New registrations, account issues",
-      enabled: true,
-    },
-    {
-      id: "payment-alerts",
-      label: "Payment Alerts",
-      description: "Payment confirmations, failures, refunds",
-      enabled: true,
-    },
-    {
-      id: "system-alerts",
-      label: "System Alerts",
-      description: "System updates, maintenance notices",
-      enabled: true,
-    },
-  ]);
-  const [reports, setReports] = useState<NotificationToggle[]>([
-    {
-      id: "weekly-reports",
-      label: "Weekly Reports",
-      description: "Receive weekly performance summary",
-      enabled: true,
-    },
-    {
-      id: "monthly-reports",
-      label: "Monthly Reports",
-      description: "Receive monthly business analytics",
-      enabled: true,
-    },
-  ]);
+  const { data: profile, isLoading } = useProfile();
+  const { mutate: updateProfile, isPending: saving } = useUpdateProfile();
 
-  const toggleAlert = (id: string) => {
-    setAlerts(
-      alerts.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)),
-    );
+  const defaultSettings = {
+    push_enabled: true,
+    email_enabled: true,
+    transactions: true,
+    promotions: false,
   };
 
-  const toggleReport = (id: string) => {
-    setReports(
-      reports.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)),
-    );
+  const [original, setOriginal] = useState(defaultSettings);
+  const [settings, setSettings] = useState(defaultSettings);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+    const loaded = { ...defaultSettings, ...profile.notificationSettings };
+    setOriginal(loaded);
+    setSettings(loaded);
+  }, [profile]);
+
+  const toggle = (key: keyof typeof settings) => {
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    setHasChanges(true);
   };
 
   const handleSave = () => {
-    console.log("Saving notification settings...");
+    updateProfile(
+      { notificationSettings: settings },
+      {
+        onSuccess: (res) => {
+          toast.success(res.message ?? "Notification settings saved");
+          setOriginal(settings);
+          setHasChanges(false);
+        },
+        onError: () => toast.error("Failed to save notification settings"),
+      },
+    );
   };
 
   const handleCancel = () => {
-    console.log("Cancelled");
+    setSettings(original);
+    setHasChanges(false);
   };
 
   return (
@@ -132,72 +105,65 @@ export function NotificationSettings() {
       </div>
 
       <div className="space-y-1">
-        {/* Email Notifications */}
-        <h3 className="text-[15px] font-semibold text-gray-900">
-          Email Notifications
-        </h3>
+        <h3 className="text-[15px] font-semibold text-gray-900">Channels</h3>
         <div className="space-y-2">
-          <div className="pb-6 pt-3 border-b border-gray-100">
+          <div className="pt-3 border-b border-gray-100 pb-5 space-y-2">
             <CustomCheckbox
-              checked={emailEnabled}
-              onChange={() => setEmailEnabled((p) => !p)}
-              label="Enable email notifications"
+              checked={settings.email_enabled}
+              onChange={() => toggle("email_enabled")}
+              label="Email Notifications"
               description="Receive notifications via email"
+            />
+            <CustomCheckbox
+              checked={settings.push_enabled}
+              onChange={() => toggle("push_enabled")}
+              label="Push Notifications"
+              description="Receive push notifications on your device"
             />
           </div>
         </div>
 
-        {/* Alert Types */}
         <div>
           <h3 className="text-[15px] font-semibold text-gray-900 pt-5 mb-3">
-            Alert Types
+            Notification Types
           </h3>
           <div className="space-y-2 border-b border-gray-100 pb-5">
-            {alerts.map((alert) => (
-              <CustomCheckbox
-                key={alert.id}
-                checked={alert.enabled}
-                onChange={() => toggleAlert(alert.id)}
-                label={alert.label}
-                description={alert.description}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Reports */}
-        <div>
-          <h3 className="text-[15px] font-semibold text-gray-900 pt-5 mb-3">
-            Reports
-          </h3>
-          <div className="space-y-2 border-b border-gray-100 pb-5">
-            {reports.map((report) => (
-              <CustomCheckbox
-                key={report.id}
-                checked={report.enabled}
-                onChange={() => toggleReport(report.id)}
-                label={report.label}
-                description={report.description}
-              />
-            ))}
+            <CustomCheckbox
+              checked={settings.transactions}
+              onChange={() => toggle("transactions")}
+              label="Transactions"
+              description="Payment confirmations, failures, refunds"
+            />
+            <CustomCheckbox
+              checked={settings.promotions}
+              onChange={() => toggle("promotions")}
+              label="Promotions"
+              description="Promotional offers and marketing updates"
+            />
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-3 mt-8 ">
+      <div className="flex items-center justify-end gap-3 mt-8">
         <button
           onClick={handleCancel}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          disabled={!hasChanges || saving}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="flex items-center justify-between gap-5 px-3 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors"
+          disabled={!hasChanges || saving}
+          className="flex items-center gap-3 px-3 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Save className="w-4 h-4" />
-          Save Changes
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
     </div>

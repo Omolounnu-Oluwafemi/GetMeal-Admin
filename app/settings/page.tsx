@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Lock as LockIcon, Eye, Key, Shield, Globe, LogOut } from "@/lib/icons";
+import { Lock as LockIcon, Eye, Key, Globe, LogOut } from "@/lib/icons";
+import { useChangePassword } from "@/lib/hooks/profile";
+import { toast } from "sonner";
 import SettingsNav from "@/components/Settings/Settingsnav";
 import ProfileSettings from "@/components/Settings/Profilesettings";
 import { NotificationSettings } from "@/components/Settings/Notificationandsystemsettings";
@@ -13,22 +15,16 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
 
-  const handleAddMember = (member: {
-    name: string;
-    email: string;
-    role: string;
-  }) => {
-    console.log("Adding member:", member);
+  const handleAddMember = () => {
     setShowAddMemberModal(false);
-    // Add to team list
   };
 
   const renderContent = () => {
     switch (activeTab) {
       case "profile":
         return <ProfileSettings />;
-      // case "notifications":
-      //   return <NotificationSettings />;
+      case "notifications":
+        return <NotificationSettings />;
       case "security":
         return <SecuritySettings />;
       case "team":
@@ -67,11 +63,55 @@ export default function SettingsPage() {
 function SecuritySettings() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [passwords, setPasswords] = useState({
     current: "",
     newPass: "",
     confirm: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { mutate: changePassword, isPending } = useChangePassword();
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!passwords.current) e.current = "Current password is required";
+    if (!passwords.newPass) e.newPass = "New password is required";
+    else if (passwords.newPass.length < 8)
+      e.newPass = "Must be at least 8 characters";
+    if (!passwords.confirm) e.confirm = "Please confirm your new password";
+    else if (passwords.newPass !== passwords.confirm)
+      e.confirm = "Passwords do not match";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+    changePassword(
+      {
+        oldPassword: passwords.current,
+        newPassword: passwords.newPass,
+        confirmPassword: passwords.confirm,
+      },
+      {
+        onSuccess: (res) => {
+          toast.success(res.message ?? "Password updated successfully");
+          setPasswords({ current: "", newPass: "", confirm: "" });
+          setErrors({});
+        },
+        onError: (err: any) => {
+          const msg =
+            err?.response?.data?.message ?? "Failed to update password";
+          toast.error(msg);
+        },
+      },
+    );
+  };
+
+  const handleCancel = () => {
+    setPasswords({ current: "", newPass: "", confirm: "" });
+    setErrors({});
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -99,7 +139,7 @@ function SecuritySettings() {
                   setPasswords({ ...passwords, current: e.target.value })
                 }
                 placeholder="Enter current password"
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+                className={`w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] ${errors.current ? "ring-2 ring-red-400" : ""}`}
               />
               <button
                 type="button"
@@ -109,6 +149,9 @@ function SecuritySettings() {
                 <Eye className="w-4 h-4" />
               </button>
             </div>
+            {errors.current && (
+              <p className="text-[11px] text-red-500 mt-1">{errors.current}</p>
+            )}
           </div>
           <div>
             <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
@@ -123,7 +166,7 @@ function SecuritySettings() {
                   setPasswords({ ...passwords, newPass: e.target.value })
                 }
                 placeholder="Enter new password"
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+                className={`w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] ${errors.newPass ? "ring-2 ring-red-400" : ""}`}
               />
               <button
                 type="button"
@@ -133,9 +176,13 @@ function SecuritySettings() {
                 <Eye className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1.5">
-              Must be at least 8 characters with letters and numbers
-            </p>
+            {errors.newPass ? (
+              <p className="text-[11px] text-red-500 mt-1">{errors.newPass}</p>
+            ) : (
+              <p className="text-[11px] text-gray-400 mt-1.5">
+                Must be at least 8 characters with letters and numbers
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
@@ -144,28 +191,48 @@ function SecuritySettings() {
             <div className="relative">
               <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
-                type="password"
+                type={showConfirm ? "text" : "password"}
                 value={passwords.confirm}
                 onChange={(e) =>
                   setPasswords({ ...passwords, confirm: e.target.value })
                 }
                 placeholder="Confirm new password"
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02]"
+                className={`w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#219e02] ${errors.confirm ? "ring-2 ring-red-400" : ""}`}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
             </div>
+            {errors.confirm && (
+              <p className="text-[11px] text-red-500 mt-1">{errors.confirm}</p>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
           <button
-            onClick={() =>
-              setPasswords({ current: "", newPass: "", confirm: "" })
-            }
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            onClick={handleCancel}
+            disabled={isPending}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
-          <button className="flex items-center gap-3 px-4 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors">
-            Update Password
+          <button
+            onClick={handleSubmit}
+            disabled={isPending}
+            className="flex items-center gap-3 px-4 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Password"
+            )}
           </button>
         </div>
       </div>
@@ -241,18 +308,6 @@ function SecuritySettings() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Log Out */}
-      <div className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm">
-        <h3 className="text-base font-semibold text-red-600 mb-1">Log Out</h3>
-        <p className="text-sm text-gray-500 mb-5">
-          End your current session and return to the login page
-        </p>
-        <button className="flex items-center gap-2 px-4 py-2.5 border border-red-400 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors">
-          <LogOut className="w-4 h-4" />
-          Log Out
-        </button>
       </div>
     </div>
   );

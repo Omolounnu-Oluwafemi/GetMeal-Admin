@@ -14,6 +14,13 @@ import {
   Check,
   AlertTriangle,
 } from "@/lib/icons";
+import {
+  useZones,
+  useAddZone,
+  useDeleteZone,
+  type ServiceZone,
+} from "@/lib/hooks/profile";
+import { toast } from "sonner";
 
 interface PaymentMethod {
   id: string;
@@ -22,11 +29,6 @@ interface PaymentMethod {
   logoColor: string;
   status: "Connected" | "Disconnected";
   webhookPath: string;
-}
-
-interface ServiceZone {
-  id: string;
-  name: string;
 }
 
 const paymentMethods: PaymentMethod[] = [
@@ -62,15 +64,6 @@ const paymentMethods: PaymentMethod[] = [
     status: "Connected",
     webhookPath: "googlepay",
   },
-];
-
-const initialZones: ServiceZone[] = [
-  { id: "1", name: "Lekki" },
-  { id: "2", name: "Victoria Island" },
-  { id: "3", name: "Ikeja/Maryland" },
-  { id: "4", name: "Surulere" },
-  { id: "5", name: "Yaba" },
-  { id: "6", name: "Ikoyi" },
 ];
 
 const popularZones = [
@@ -295,7 +288,7 @@ function ConfigureModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -303,10 +296,12 @@ function DeleteZoneModal({
   zone,
   onClose,
   onConfirm,
+  isPending,
 }: {
   zone: ServiceZone;
   onClose: () => void;
   onConfirm: () => void;
+  isPending?: boolean;
 }) {
   return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -394,32 +389,53 @@ function DeleteZoneModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-colors"
+            disabled={isPending}
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Delete Zone
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Zone"
+            )}
           </button>
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
-function AddZoneModal({
-  onClose,
-  onAdd,
-}: {
-  onClose: () => void;
-  onAdd: (name: string) => void;
-}) {
+function AddZoneModal({ onClose }: { onClose: () => void }) {
   const [zoneName, setZoneName] = useState("");
   const [coverageAreas, setCoverageAreas] = useState("");
   const [activateZone, setActivateZone] = useState(true);
+  const { mutate: addZone, isPending } = useAddZone();
 
   const handleAdd = () => {
-    if (zoneName.trim()) {
-      onAdd(zoneName.trim());
-    }
+    if (!zoneName.trim()) return;
+    const areas = coverageAreas
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    addZone(
+      {
+        name: zoneName.trim(),
+        coverageAreas: areas,
+        activateImmediately: activateZone,
+      },
+      {
+        onSuccess: (res) => {
+          toast.success(res.message ?? "Zone added successfully");
+          onClose();
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.message ?? "Failed to add zone");
+        },
+      },
+    );
   };
 
   const handleChipClick = (chip: string) => {
@@ -562,42 +578,54 @@ function AddZoneModal({
           </button>
           <button
             onClick={handleAdd}
-            disabled={!zoneName.trim()}
+            disabled={!zoneName.trim() || isPending}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#219e02] text-white rounded-xl text-sm font-medium hover:bg-[#1a7d01] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
-            Add Zone
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Add Zone
+              </>
+            )}
           </button>
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 export default function SystemSettings() {
-  const [zones, setZones] = useState<ServiceZone[]>(initialZones);
+  const { data: zones = [] } = useZones();
+  const { mutate: deleteZone, isPending: deleting } = useDeleteZone();
   const [showAddZoneModal, setShowAddZoneModal] = useState(false);
   const [deletingZone, setDeletingZone] = useState<ServiceZone | null>(null);
   const [configuringMethod, setConfiguringMethod] =
     useState<PaymentMethod | null>(null);
 
-  const handleAddZone = (name: string) => {
-    setZones([...zones, { id: Date.now().toString(), name }]);
-    setShowAddZoneModal(false);
-  };
-
   const handleConfirmDelete = () => {
-    if (deletingZone) {
-      setZones(zones.filter((z) => z.id !== deletingZone.id));
-      setDeletingZone(null);
-    }
+    if (!deletingZone) return;
+    deleteZone(deletingZone._id, {
+      onSuccess: (res) => {
+        toast.success(res.message ?? "Zone deleted successfully");
+        setDeletingZone(null);
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message ?? "Failed to delete zone");
+        setDeletingZone(null);
+      },
+    });
   };
 
   return (
     <div className="w-full space-y-10">
       {/* Payment Methods */}
-      <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+      {/* <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
         <div className="mb-5">
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
             Payment Methods
@@ -637,7 +665,7 @@ export default function SystemSettings() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Service Zones */}
       <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
@@ -662,14 +690,21 @@ export default function SystemSettings() {
         <div className="grid grid-cols-2 gap-3">
           {zones.map((zone) => (
             <div
-              key={zone.id}
+              key={zone._id}
               className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm group"
             >
               <div className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-[#219e02]" />
-                <span className="text-sm font-medium text-gray-900">
-                  {zone.name}
-                </span>
+                <div>
+                  <span className="text-sm font-medium text-gray-900">
+                    {zone.name}
+                  </span>
+                  <span
+                    className={`ml-2 px-2 py-0.5 text-[10px] font-medium rounded-full ${zone.isActive ? "bg-[#F0FDF4] text-[#219e02]" : "bg-gray-100 text-gray-400"}`}
+                  >
+                    {zone.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setDeletingZone(zone)}
@@ -683,7 +718,7 @@ export default function SystemSettings() {
       </div>
 
       {/* Danger Zone */}
-      <div className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm">
+      {/* <div className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm">
         <h2 className="text-lg font-semibold text-red-600 mb-1">Danger Zone</h2>
         <p className="text-sm text-gray-500 mb-5">
           Irreversible actions that affect the entire platform
@@ -716,7 +751,7 @@ export default function SystemSettings() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Configure Modal */}
       {configuringMethod && (
@@ -732,15 +767,13 @@ export default function SystemSettings() {
           zone={deletingZone}
           onClose={() => setDeletingZone(null)}
           onConfirm={handleConfirmDelete}
+          isPending={deleting}
         />
       )}
 
       {/* Add Zone Modal */}
       {showAddZoneModal && (
-        <AddZoneModal
-          onClose={() => setShowAddZoneModal(false)}
-          onAdd={handleAddZone}
-        />
+        <AddZoneModal onClose={() => setShowAddZoneModal(false)} />
       )}
     </div>
   );

@@ -10,7 +10,7 @@ import {
   AlertCircle,
   ClockIcon,
 } from "@/lib/icons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNotifications, type NotifType, type Notification } from "@/lib/hooks/notifications";
 import { CheckCheck } from "lucide-react";
 
@@ -64,18 +64,15 @@ function NotifIcon({ type }: { type: NotifType }) {
 export default function NotificationsDropdown({ onClose }: Props) {
   const router = useRouter();
   const { data: fetchedNotifs = [], isLoading } = useNotifications();
-  const [notifs, setNotifs] = useState<Notification[]>([]);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setNotifs(fetchedNotifs);
-  }, [fetchedNotifs]);
-
+  const notifs: Notification[] = fetchedNotifs.map((n) =>
+    readIds.has(n.id) ? { ...n, read: true } : n,
+  );
   const unreadCount = notifs.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) =>
-    setNotifs((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+    setReadIds((prev) => new Set([...prev, id]));
 
   const handleView = (n: Notification) => {
     markAsRead(n.id);
@@ -85,7 +82,7 @@ export default function NotificationsDropdown({ onClose }: Props) {
   };
 
   const markAllAsRead = () =>
-    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    setReadIds(new Set(fetchedNotifs.map((n) => n.id)));
 
   return createPortal(
     <>
