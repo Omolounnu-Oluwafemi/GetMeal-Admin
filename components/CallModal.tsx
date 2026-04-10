@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Phone } from "@/lib/icons";
 import { Copy, CheckCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CallModalProps {
   name: string;
@@ -22,8 +23,18 @@ export default function CallModal({ name, phone, onClose }: CallModalProps) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+    <motion.div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         {/* Green header */}
         <div className="bg-[#219e02] px-6 py-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
@@ -66,8 +77,8 @@ export default function CallModal({ name, phone, onClose }: CallModalProps) {
             Close
           </button>
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body
   );
 }

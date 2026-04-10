@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { SearchResults } from "@/lib/hooks/search";
+import { motion } from "framer-motion";
 
 interface GlobalSearchDropdownProps {
   results: SearchResults | undefined;
@@ -83,7 +84,12 @@ export default function GlobalSearchDropdown({
   const total = users.length + cooks.length + orders.length;
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl z-50 overflow-hidden max-h-[420px] overflow-y-auto">
+    <motion.div
+      className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl z-50 overflow-hidden max-h-[420px] overflow-y-auto"
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
+    >
       {isLoading ? (
         <div className="px-4 py-6 space-y-3">
           {[1, 2, 3].map((i) => (
@@ -162,6 +168,6 @@ export default function GlobalSearchDropdown({
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

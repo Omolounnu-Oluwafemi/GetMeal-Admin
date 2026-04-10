@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { X, Send, Megaphone, Users, ChevronDown, Check } from "@/lib/icons";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
@@ -124,8 +125,18 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
   const selectedTypeData = messageTypes.find((t) => t.type === selectedType)!;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-[20px] w-full max-w-2xl flex flex-col max-h-[90vh]">
+    <motion.div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-[20px] w-full max-w-2xl flex flex-col max-h-[90vh]"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         {/* Header */}
         <div className="shrink-0 p-6 border-b border-[#F3F4F6]">
           <div className="flex items-start justify-between mb-2">
@@ -376,7 +387,7 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

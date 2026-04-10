@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { useNotifications, type NotifType, type Notification } from "@/lib/hooks/notifications";
 import { CheckCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Props {
   onClose: () => void;
@@ -90,7 +91,12 @@ export default function NotificationsDropdown({ onClose }: Props) {
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed top-[85px] right-6 z-50 w-[430px] bg-white rounded-2xl shadow-2xl flex flex-col max-h-[680px]">
+      <motion.div
+        className="fixed top-[85px] right-6 z-50 w-[430px] bg-white rounded-2xl shadow-2xl flex flex-col max-h-[680px]"
+        initial={{ opacity: 0, y: -10, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         {/* Header */}
         <div className="flex items-start justify-between px-5 pt-5 pb-3">
           <div>
@@ -200,7 +206,7 @@ export default function NotificationsDropdown({ onClose }: Props) {
             View All Notifications
           </button>
         </div>
-      </div>
+      </motion.div>
     </>,
     document.body,
   );

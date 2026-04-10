@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { X, MessageSquare, FileText, Phone } from "@/lib/icons";
 import { Ban, UserCheck } from "lucide-react";
@@ -31,9 +32,12 @@ export default function CustomerProfileSidebar({
   return createPortal(
     <>
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
-      <div
+      <motion.div
         className="fixed top-0 right-0 h-full w-[41%] pb-6 bg-white z-50 shadow-2xl flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
+        initial={{ x: "100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ type: "spring", damping: 30, stiffness: 280 }}
       >
         <div className="flex justify-end px-4 pt-4">
           <button
@@ -238,7 +242,7 @@ export default function CustomerProfileSidebar({
             </section>
           )}
         </div>
-      </div>
+      </motion.div>
       {callTarget && <CallModal name={callTarget.name} phone={callTarget.phone} onClose={() => setCallTarget(null)} />}
     </>,
     document.body,

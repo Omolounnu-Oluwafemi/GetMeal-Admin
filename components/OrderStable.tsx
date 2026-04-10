@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { MoreVertical, Phone, User, X, DollarSign } from "@/lib/icons";
 import OrderDetailsSidebar from "@/components/Order/Orderdetailssidebar";
@@ -448,10 +449,13 @@ export default function OrdersTable({
       </div>
 
       {openMenu && createPortal(
-        <div
+        <motion.div
           ref={menuPanelRef}
           className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[200]"
           style={{ top: openMenu.top, right: openMenu.right }}
+          initial={{ opacity: 0, scale: 0.95, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.12, ease: "easeOut" }}
         >
           {(() => {
             const order = filteredOrders.find((o) => o.id === openMenu.orderId);
@@ -496,7 +500,7 @@ export default function OrdersTable({
               </>
             );
           })()}
-        </div>,
+        </motion.div>,
         document.body
       )}
 

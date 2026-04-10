@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { X, Star, Phone, MessageSquare } from "@/lib/icons";
 import CallModal from "@/components/CallModal";
 import { Package, DollarSign, TrendingUp, ShoppingBag } from "lucide-react";
@@ -68,7 +69,12 @@ export default function CookOrdersView({
 
   return (
     <>
-    <div className="fixed top-0 right-0 bottom-0 left-[108px] bg-[#fafafa] z-[60] flex flex-col overflow-y-auto">
+    <motion.div
+      className="fixed top-0 right-0 bottom-0 left-[108px] bg-[#fafafa] z-[60] flex flex-col overflow-y-auto"
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ type: "spring", damping: 30, stiffness: 280 }}
+    >
       {/* Top bar */}
       <div className="flex items-center gap-3 px-8 py-4 border-b border-gray-200">
         <button
@@ -451,7 +457,7 @@ export default function CookOrdersView({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
 
     {callTarget && (
       <CallModal

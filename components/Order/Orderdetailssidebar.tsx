@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   X,
   Clock,
@@ -79,7 +80,12 @@ export default function OrderDetailsSidebar({
           <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
 
           {/* Sidebar */}
-          <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col animate-slide-in">
+          <motion.div
+            className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col"
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 30, stiffness: 280 }}
+          >
             {/* Header */}
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-start justify-between">
@@ -378,21 +384,7 @@ export default function OrderDetailsSidebar({
                 Issue Refund
               </button>
             </div>
-          </div>
-
-          <style jsx>{`
-            @keyframes slide-in {
-              from {
-                transform: translateX(100%);
-              }
-              to {
-                transform: translateX(0);
-              }
-            }
-            .animate-slide-in {
-              animation: slide-in 0.3s ease-out;
-            }
-          `}</style>
+          </motion.div>
         </>
       )}
 

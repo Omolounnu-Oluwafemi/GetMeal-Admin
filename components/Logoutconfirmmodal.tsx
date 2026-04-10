@@ -1,6 +1,7 @@
 "use client";
 
 import { LogOut, X } from "@/lib/icons";
+import { motion } from "framer-motion";
 
 interface LogoutConfirmModalProps {
   onClose: () => void;
@@ -12,8 +13,18 @@ export default function LogoutConfirmModal({
   onConfirm,
 }: LogoutConfirmModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-[20px] w-full max-w-md">
+    <motion.div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="bg-white rounded-[20px] w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         {/* Header */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-start justify-between">
@@ -62,7 +73,7 @@ export default function LogoutConfirmModal({
             Log Out
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

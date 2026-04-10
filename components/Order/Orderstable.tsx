@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { MoreVertical, Eye, Phone, User, X, DollarSign } from "@/lib/icons";
 
@@ -144,10 +145,13 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
       </div>
 
       {openMenu && createPortal(
-        <div
+        <motion.div
           ref={menuPanelRef}
           className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[200]"
           style={{ top: openMenu.top, right: openMenu.right }}
+          initial={{ opacity: 0, scale: 0.95, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.12, ease: "easeOut" }}
         >
           <button
             onClick={() => handleAction("view-details", openMenu.orderId)}
@@ -185,7 +189,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
             <DollarSign className="w-4 h-4" />
             Issue Refund
           </button>
-        </div>,
+        </motion.div>,
         document.body
       )}
     </>
