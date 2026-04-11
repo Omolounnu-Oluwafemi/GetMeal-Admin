@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Star, Phone, MessageSquare } from "@/lib/icons";
 import CallModal from "@/components/CallModal";
+import Pagination from "@/components/Pagination";
 import { Package, DollarSign, TrendingUp, ShoppingBag } from "lucide-react";
 import { useCookById } from "@/lib/hooks/cooks";
 import { useOrdersFilter } from "@/lib/hooks/orders";
@@ -39,6 +40,8 @@ export default function CookOrdersView({
 }: CookOrdersViewProps) {
   const [activeTab, setActiveTab] = useState<"history" | "performance">("history");
   const [callTarget, setCallTarget] = useState<{ name: string; phone: string } | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const { data: cookData, isLoading: cookLoading } = useCookById(cookId);
   const { data: ordersData, isLoading: ordersLoading } = useOrdersFilter({
@@ -48,12 +51,15 @@ export default function CookOrdersView({
   const cook = cookData ? mapCook(cookData) : null;
   const orders = (ordersData ?? []).map(mapFilterOrder);
 
-  const activeOrders = orders.filter((o) =>
-    ["Pending", "Cooking"].includes(o.status),
-  ).length;
-  const completedOrders = orders.filter((o) =>
+  const pendingOrders = orders.filter((o) => o.status === "Pending").length;
+  const confirmedOrders = orders.filter((o) => o.status === "Confirmed").length;
+  const deliveredOrders = orders.filter((o) =>
     ["Completed", "Delivered"].includes(o.status),
   ).length;
+  const cancelledOrders = orders.filter((o) => o.status === "Cancelled").length;
+
+  const totalPages = Math.ceil(orders.length / PAGE_SIZE);
+  const pagedOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalRevenue = orders.reduce((sum, o) => {
     const amt = parseInt(o.payment.replace(/[^0-9]/g, ""), 10) || 0;
     return sum + amt;
@@ -227,21 +233,35 @@ export default function CookOrdersView({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {[
             {
-              label: "Active Orders",
-              value: ordersLoading ? "—" : activeOrders,
+              label: "Pending",
+              value: ordersLoading ? "—" : pendingOrders,
               icon: <ShoppingBag className="w-5 h-5 text-blue-500" />,
               iconBg: "bg-blue-50",
               valueColor: "text-gray-900",
             },
             {
-              label: "Completed",
-              value: ordersLoading ? "—" : completedOrders,
+              label: "Confirmed",
+              value: ordersLoading ? "—" : confirmedOrders,
+              icon: <Package className="w-5 h-5 text-purple-500" />,
+              iconBg: "bg-purple-50",
+              valueColor: "text-purple-600",
+            },
+            {
+              label: "Delivered",
+              value: ordersLoading ? "—" : deliveredOrders,
               icon: <Package className="w-5 h-5 text-[#219e02]" />,
               iconBg: "bg-[#F0FDF4]",
-              valueColor: "text-gray-900",
+              valueColor: "text-[#219e02]",
+            },
+            {
+              label: "Cancelled",
+              value: ordersLoading ? "—" : cancelledOrders,
+              icon: <ShoppingBag className="w-5 h-5 text-red-500" />,
+              iconBg: "bg-red-50",
+              valueColor: "text-red-500",
             },
             {
               label: "Total Revenue",
@@ -330,6 +350,14 @@ export default function CookOrdersView({
               </div>
             ) : (
               <div className="border rounded-2xl overflow-hidden">
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  total={orders.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setPage}
+                  label="orders"
+                />
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
@@ -357,7 +385,7 @@ export default function CookOrdersView({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {orders.map((order) => (
+                    {pagedOrders.map((order) => (
                       <tr
                         key={order.id}
                         className="hover:bg-gray-50 transition-colors"
@@ -375,16 +403,24 @@ export default function CookOrdersView({
                                 <Package className="w-5 h-5 text-gray-400" />
                               </div>
                             )}
-                            <div className="relative group max-w-[160px]">
-                              <span className="text-sm font-medium text-gray-900 block truncate">
+                            <div className="relative group">
+                              <span className="text-sm font-medium text-gray-900 block truncate max-w-[140px]">
                                 {order.meal}
-                                {order.items > 0 && (
-                                  <span className="text-gray-400"> +{order.items}</span>
-                                )}
                               </span>
+                              {order.items > 0 && (
+                                <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-500 rounded-full">
+                                  +{order.items} more
+                                </span>
+                              )}
                               <div className="absolute bottom-[calc(100%+6px)] left-0 z-50 hidden group-hover:block">
-                                <div className="bg-white text-gray-800 text-xs rounded-lg px-3 py-2 whitespace-nowrap max-w-[280px] shadow-lg border border-gray-200">
-                                  {order.meal}
+                                <div className="bg-white text-gray-800 text-xs rounded-lg px-3 py-2 shadow-lg border border-gray-200 min-w-max max-w-[280px]">
+                                  {order.mealItems && order.mealItems.length > 0
+                                    ? order.mealItems.map((item, i) => (
+                                        <div key={i} className={i > 0 ? "mt-1 pt-1 border-t border-gray-100" : ""}>
+                                          {item.name} ×{item.quantity}
+                                        </div>
+                                      ))
+                                    : order.meal}
                                   <div className="absolute top-full left-4 border-4 border-transparent border-t-white" />
                                 </div>
                               </div>

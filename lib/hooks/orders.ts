@@ -11,14 +11,17 @@ export interface ApiOrderFilter {
   createdAt: string;
   deliveryTime?: string;
   mealItems: {
-    mealId: string;
+    mealId?: string;
     name: string;
-    image?: string;
+    description?: string;
+    category?: string;
+    images?: { url: string; publicId: string }[];
+    image?: string; // some endpoints return a flat string
     quantity: number;
     price: number;
   }[];
-  user: { _id: string; fullName: string; email: string; phone: string; city?: string };
-  cook: { cookId: string; name: string; email: string; phone: string };
+  user: { _id: string; fullName: string; email: string; phone: string; city?: string; profileImage?: { url: string } | null };
+  cook: { cookId: string; name: string; email: string; phone: string; profileImage?: { url: string } | null };
 }
 
 // Shape returned by GET /api/admin/orders/:id
@@ -44,8 +47,27 @@ export interface ApiOrderDetail {
 
 export interface ApiOrder {
   _id: string;
-  user: { _id: string; fullName: string; phone: string } | null;
-  cook: { _id: string; fullName: string; phone: string } | null;
+  user: {
+    _id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage?: { url: string; publicId?: string } | null;
+    location?: {
+      address?: string;
+      city?: string;
+      state?: string;
+      lga?: string;
+    } | null;
+  } | null;
+  cook: {
+    _id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage?: { url: string; publicId?: string } | null;
+    cookAddress?: string | null;
+  } | null;
   totalAmount: number;
   mealItems: {
     mealId: string;

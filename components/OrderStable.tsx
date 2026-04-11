@@ -415,15 +415,11 @@ export default function OrdersTable({
                     <div className="text-xs text-gray-500 uppercase mb-1">
                       STATUS
                     </div>
-                    <div
-                      className={`text-sm font-medium ${
-                        order.status === "Cooking"
-                          ? "text-green-600"
-                          : "text-gray-500"
-                      }`}
+                    <span
+                      className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${order.statusColor}`}
                     >
                       {order.status}
-                    </div>
+                    </span>
                   </td>
 
                   {/* Actions Menu */}

@@ -3,11 +3,13 @@ import { Order } from "@/components/OrderStable";
 
 export const STATUS_MAP: Record<string, { status: string; statusColor: string; tabKey: string }> = {
   pending: { status: "Pending", statusColor: "bg-blue-50 text-blue-600", tabKey: "new" },
+  confirmed: { status: "Confirmed", statusColor: "bg-purple-50 text-purple-600", tabKey: "active-cooks" },
   cooking: { status: "Cooking", statusColor: "bg-green-100 text-green-600", tabKey: "active-cooks" },
+  picked_up: { status: "Picked Up", statusColor: "bg-cyan-50 text-cyan-600", tabKey: "active-cooks" },
   completed: { status: "Completed", statusColor: "bg-gray-100 text-gray-500", tabKey: "completed" },
-  delivered: { status: "Delivered", statusColor: "bg-gray-100 text-gray-500", tabKey: "completed" },
+  delivered: { status: "Delivered", statusColor: "bg-green-50 text-green-600", tabKey: "completed" },
   cancelled: { status: "Cancelled", statusColor: "bg-red-100 text-red-500", tabKey: "cancelled" },
-  refunded: { status: "Refunded", statusColor: "bg-purple-100 text-purple-500", tabKey: "refunded" },
+  refunded: { status: "Refunded", statusColor: "bg-orange-50 text-orange-500", tabKey: "refunded" },
 };
 
 export function mapOrder(o: ApiOrder): Order {
@@ -20,13 +22,21 @@ export function mapOrder(o: ApiOrder): Order {
     tabKey: "new",
   };
 
+  const userLocation = o.user?.location;
+  const customerArea =
+    userLocation?.lga ??
+    userLocation?.city ??
+    userLocation?.state ??
+    userLocation?.address ??
+    "—";
+
   return {
     id: o._id,
     meal: mainItem?.name ?? "—",
     items: Math.max(0, totalItems - (mainItem?.quantity ?? 1)),
     image: mainItem?.images?.[0]?.url ?? "",
     orderId: `#GTM-${o._id.slice(-6)}`,
-    customerArea: "—",
+    customerArea,
     payment: `₦${(o.totalAmount ?? 0).toLocaleString()}`,
     paymentStatus:
       o.paymentStatus === "paid"
@@ -38,12 +48,12 @@ export function mapOrder(o: ApiOrder): Order {
       initial: cookName[0]?.toUpperCase() ?? "?",
       name: cookName,
       color: "#219e02",
-      email: "",
+      email: o.cook?.email ?? "",
       phone: o.cook?.phone ?? "",
     },
     customer: {
       name: o.user?.fullName ?? "—",
-      email: "",
+      email: o.user?.email ?? "",
       phone: o.user?.phone ?? "",
     },
     timeline: {
@@ -56,6 +66,12 @@ export function mapOrder(o: ApiOrder): Order {
       expectedDelivery: "—",
     },
     ...statusInfo,
+    mealItems: o.mealItems?.map((item) => ({
+      name: item.name,
+      image: item.images?.[0]?.url ?? "",
+      quantity: item.quantity,
+      price: item.price,
+    })),
     cookId: o.cook?._id,
     customerId: o.user?._id,
   };
@@ -114,6 +130,7 @@ export function mapAtRiskOrder(o: ApiAtRiskOrder): Order {
   };
 }
 
+
 export function mapFilterOrder(o: ApiOrderFilter): Order {
   const mainItem = o.mealItems?.[0];
   const totalItems = o.mealItems?.reduce((sum, i) => sum + i.quantity, 0) ?? 1;
@@ -167,6 +184,12 @@ export function mapFilterOrder(o: ApiOrderFilter): Order {
         : "—",
     },
     ...statusInfo,
+    mealItems: o.mealItems?.map((item) => ({
+      name: item.name,
+      image: item.images?.[0]?.url ?? item.image ?? "",
+      quantity: item.quantity,
+      price: item.price,
+    })),
     cookId: o.cook?.cookId,
   };
 }
