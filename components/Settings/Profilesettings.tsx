@@ -188,7 +188,7 @@ export default function ProfileSettings() {
         </div>
 
         {/* Phone Number + Role */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
               Phone Number
@@ -233,7 +233,7 @@ export default function ProfileSettings() {
         </div>
 
         {/* Timezone and Language */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-[13px] font-medium text-gray-900 mb-[6px]">
               Timezone

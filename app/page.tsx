@@ -60,7 +60,7 @@ export default function LoginPage() {
       </div>
 
       {/* Login Form */}
-      <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-sm p-8">
+      <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-sm p-5 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>

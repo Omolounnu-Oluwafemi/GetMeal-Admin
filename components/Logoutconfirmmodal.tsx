@@ -20,7 +20,7 @@ export default function LogoutConfirmModal({
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="bg-white rounded-[20px] w-full max-w-md"
+        className="bg-white rounded-[20px] w-full max-w-md mx-4"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}

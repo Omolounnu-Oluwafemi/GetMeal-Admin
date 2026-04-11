@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -10,15 +11,9 @@ export default function LayoutWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Pages that should NOT show sidebar and header
-  const excludedPaths = [
-    "/",
-    "/logout",
-    "/login",
-    "/forgot-password",
-    "/reset-password",
-  ];
+  const excludedPaths = ["/", "/logout", "/login", "/forgot-password", "/reset-password"];
   const shouldShowLayout = !excludedPaths.includes(pathname);
 
   if (!shouldShowLayout) {
@@ -27,18 +22,22 @@ export default function LayoutWrapper({
 
   return (
     <div className="flex h-full bg-[#fafafa]">
-      {/* Sidebar */}
-      <Sidebar />
+      <Sidebar
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 ml-[108px] flex flex-col min-h-0">
+      <div className="flex-1 md:ml-[108px] flex flex-col min-h-0">
         {/* Header */}
         <div className="sticky top-0 z-30">
-          <Header />
+          <Header onMenuClick={() => setMobileSidebarOpen(true)} />
         </div>
 
         {/* Page Content */}
-        <main className="relative flex-1 min-h-0 overflow-y-auto p-4 pt-6">{children}</main>
+        <main className="relative flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 pt-4 sm:pt-6">
+          {children}
+        </main>
       </div>
     </div>
   );

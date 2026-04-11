@@ -39,7 +39,7 @@ function ModalShell({
         onClick={onClose}
       />
       <motion.div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}

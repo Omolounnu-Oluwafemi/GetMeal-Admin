@@ -37,13 +37,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex p-4 gap-2">
+    <div className="flex flex-col md:flex-row p-2 sm:p-4 gap-2 sm:gap-4">
       {/* Settings Navigation */}
       <SettingsNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Content Area */}
       <div
-        className={`flex-1 ml-4 ${activeTab === "security" || activeTab === "system" ? "" : "p-6 bg-white rounded-2xl shadow-md"}`}
+        className={`flex-1 md:ml-4 min-w-0 ${activeTab === "security" || activeTab === "system" ? "" : "p-4 sm:p-6 bg-white rounded-2xl shadow-md"}`}
       >
         {renderContent()}
       </div>
@@ -114,7 +114,7 @@ function SecuritySettings() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4 sm:space-y-6">
       {/* Change Password Card */}
       <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
         <div className="mb-6">

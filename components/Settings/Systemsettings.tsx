@@ -98,7 +98,7 @@ function ConfigureModal({
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="bg-white rounded-[20px] w-full max-w-lg max-h-[90vh] flex flex-col"
+        className="bg-white rounded-[20px] w-full max-w-lg mx-4 max-h-[90vh] flex flex-col"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -322,7 +322,7 @@ function DeleteZoneModal({
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="bg-white rounded-[20px] w-full max-w-md flex flex-col"
+        className="bg-white rounded-[20px] w-full max-w-md mx-4 flex flex-col"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -471,7 +471,7 @@ function AddZoneModal({ onClose }: { onClose: () => void }) {
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="bg-white rounded-[20px] w-full max-w-lg max-h-[90vh] flex flex-col"
+        className="bg-white rounded-[20px] w-full max-w-lg mx-4 max-h-[90vh] flex flex-col"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -718,7 +718,7 @@ export default function SystemSettings() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {zones.map((zone) => (
             <div
               key={zone._id}

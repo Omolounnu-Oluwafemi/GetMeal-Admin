@@ -143,16 +143,16 @@ export default function OrdersChart({
 
   return (
     <div className="bg-white rounded-[20px] p-6 border border-[#F3F4F6]">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex gap-6">
-          <div className="w-[30%]">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
+          <div className="sm:w-[30%]">
             <h3 className="text-lg font-semibold text-[#111827] mb-1">
               Orders Activity
             </h3>
             <p className="text-sm text-[#6B7280]">Period performance</p>
           </div>
 
-          <div className="flex gap-2 w-[55%]">
+          <div className="flex gap-2 sm:w-[55%] flex-wrap">
             <div>
               <div className="text-xs text-[#9CA3AF] mb-1 text-center">
                 Peak Day
@@ -190,9 +190,9 @@ export default function OrdersChart({
           </div>
         </div>
 
-        <div className="h-16 border-l-2 border-[#E5E7EB] px-4" />
+        <div className="hidden sm:block h-16 border-l-2 border-[#E5E7EB] px-4" />
 
-        <div className="w-[38%] bg-[#F7F7F7] py-1 px-1 rounded-full">
+        <div className="w-full sm:w-[38%] bg-[#F7F7F7] py-1 px-1 rounded-full">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("volume")}
@@ -218,7 +218,7 @@ export default function OrdersChart({
         </div>
       </div>
 
-      <div className="h-[380px]">
+      <div className="h-[250px] sm:h-[320px] lg:h-[380px]">
         {loading ? (
           <div className="h-full flex items-center justify-center text-[#9CA3AF] text-sm">
             Loading chart data...

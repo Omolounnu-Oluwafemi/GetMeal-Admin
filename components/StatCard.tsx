@@ -26,7 +26,7 @@ export default function StatCard({
         <div className="text-sm text-[#6B7280]">{label}</div>
 
         {/* Value */}
-        <div className="text-[24px] font-bold text-[#111827] leading-none">
+        <div className="text-lg sm:text-[24px] font-bold text-[#111827] leading-none">
           {value}
         </div>
 

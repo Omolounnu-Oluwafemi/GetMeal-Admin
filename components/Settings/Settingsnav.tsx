@@ -26,29 +26,46 @@ export default function SettingsNav({
   onTabChange,
 }: SettingsNavProps) {
   return (
-    <div className="w-[18%] bg-white p-2 space-y-1 rounded-3xl shadow-md self-start">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.id;
+    <>
+      {/* Mobile: horizontal scrollable tabs */}
+      <div className="md:hidden flex gap-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
+                isActive ? "bg-[#219e02] text-white" : "bg-white text-gray-700 shadow-sm"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
 
-        return (
-          <button
-            key={item.id}
-            onClick={() => onTabChange(item.id)}
-            className={`
-              w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors
-              ${
-                isActive
-                  ? "bg-[#219e02] text-white"
-                  : "text-gray-700 hover:bg-gray-50"
-              }
-            `}
-          >
-            <Icon className="w-4 h-4" />
-            {item.label}
-          </button>
-        );
-      })}
-    </div>
+      {/* Desktop: vertical nav */}
+      <div className="hidden md:block w-[200px] lg:w-[220px] bg-white p-2 space-y-1 rounded-3xl shadow-md self-start flex-shrink-0">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                isActive ? "bg-[#219e02] text-white" : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </>
   );
 }

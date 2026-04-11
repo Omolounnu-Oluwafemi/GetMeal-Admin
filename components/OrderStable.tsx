@@ -246,7 +246,7 @@ export default function OrdersTable({
         />
       ) : null}
       {/* Filter Tabs */}
-      <div className="flex items-center gap-3 p-6 border-b border-[#F3F4F6] overflow-x-auto scrollbar-hide">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-6 border-b border-[#F3F4F6] overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {filterTabs.map((tab) => (
           <button
             key={tab.value}

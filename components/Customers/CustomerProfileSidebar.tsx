@@ -33,7 +33,7 @@ export default function CustomerProfileSidebar({
     <>
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
       <motion.div
-        className="fixed top-0 right-0 h-full w-[41%] pb-6 bg-white z-50 shadow-2xl flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden"
+        className="fixed top-0 right-0 h-full w-full sm:w-[80%] md:w-[50%] lg:w-[41%] pb-6 bg-white z-50 shadow-2xl flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
         initial={{ x: "100%", opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}

@@ -92,7 +92,7 @@ export default function NotificationsDropdown({ onClose }: Props) {
 
       {/* Panel */}
       <motion.div
-        className="fixed top-[85px] right-6 z-50 w-[430px] bg-white rounded-2xl shadow-2xl flex flex-col max-h-[680px]"
+        className="fixed top-[70px] sm:top-[85px] right-2 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-[430px] bg-white rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[680px]"
         initial={{ opacity: 0, y: -10, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeOut" }}

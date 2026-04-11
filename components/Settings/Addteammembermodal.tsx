@@ -110,7 +110,7 @@ export default function AddTeamMemberModal({ onClose, onAdd }: AddTeamMemberModa
       transition={{ duration: 0.2 }}
     >
       <motion.div
-        className="bg-white rounded-[20px] w-full max-w-xl max-h-[90vh] flex flex-col"
+        className="bg-white rounded-[20px] w-full max-w-xl mx-4 max-h-[90vh] flex flex-col"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -154,7 +154,7 @@ export default function AddTeamMemberModal({ onClose, onAdd }: AddTeamMemberModa
           </div>
 
           {/* Email + Phone side by side */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Email Address <span className="text-red-500">*</span>

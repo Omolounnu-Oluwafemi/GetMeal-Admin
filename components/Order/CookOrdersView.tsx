@@ -70,7 +70,7 @@ export default function CookOrdersView({
   return (
     <>
     <motion.div
-      className="fixed top-0 right-0 bottom-0 left-[108px] bg-[#fafafa] z-[60] flex flex-col overflow-y-auto"
+      className="fixed top-0 right-0 bottom-0 left-0 md:left-[108px] bg-[#fafafa] z-[60] flex flex-col overflow-y-auto"
       initial={{ x: "100%", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ type: "spring", damping: 30, stiffness: 280 }}
@@ -227,7 +227,7 @@ export default function CookOrdersView({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
               label: "Active Orders",
