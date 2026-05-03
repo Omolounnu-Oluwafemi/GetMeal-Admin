@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { X, Send, Megaphone, Users, ChevronDown, Check } from "@/lib/icons";
 import { Search } from "lucide-react";
@@ -124,7 +125,7 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
 
   const selectedTypeData = messageTypes.find((t) => t.type === selectedType)!;
 
-  return (
+  return createPortal(
     <motion.div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       initial={{ opacity: 0 }}
@@ -388,6 +389,7 @@ export default function BroadcastModal({ onClose }: BroadcastModalProps) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }

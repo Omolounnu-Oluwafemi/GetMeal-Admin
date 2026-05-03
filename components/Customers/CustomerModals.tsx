@@ -23,7 +23,7 @@ interface ModalProps {
 function ModalShell({
   children,
   onClose,
-  width = "w-[560px]",
+  width = "max-w-[560px]",
 }: {
   children: React.ReactNode;
   onClose: () => void;
@@ -39,9 +39,10 @@ function ModalShell({
         onClick={onClose}
       />
       <motion.div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className={`fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
+        style={{ x: "-50%", y: "-50%" }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -172,7 +173,7 @@ export function IssueCreditModal({ customerId, customerName, onClose }: ModalPro
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-1">
         <div className="flex items-center gap-3">
@@ -309,7 +310,7 @@ export function AddNoteModal({ customerId, customerName, onClose }: ModalProps) 
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-1">
         <div className="flex items-center gap-3">
@@ -387,7 +388,7 @@ export function SuspendUserModal({ customerId, customerName, onClose }: ModalPro
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-1">
         <div className="flex items-center gap-3">
@@ -491,7 +492,7 @@ export function ReactivateModal({ customerId, customerName, onClose }: ModalProp
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-1">
         <div className="flex items-center gap-3">

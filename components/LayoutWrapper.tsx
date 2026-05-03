@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { clearAuthStorage } from "@/lib/api";
+
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"] as const;
 
 export default function LayoutWrapper({
   children,
@@ -11,12 +15,36 @@ export default function LayoutWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const excludedPaths = ["/", "/logout", "/login", "/forgot-password", "/reset-password"];
-  const shouldShowLayout = !excludedPaths.includes(pathname);
+  const isProtected = !excludedPaths.includes(pathname);
 
-  if (!shouldShowLayout) {
+  const logout = useCallback(() => {
+    clearAuthStorage();
+    router.replace("/");
+  }, [router]);
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(logout, INACTIVITY_TIMEOUT);
+  }, [logout]);
+
+  useEffect(() => {
+    if (!isProtected) return;
+
+    resetTimer();
+    ACTIVITY_EVENTS.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, resetTimer));
+    };
+  }, [isProtected, resetTimer]);
+
+  if (!isProtected) {
     return <div className="min-h-screen bg-[#fafafa]">{children}</div>;
   }
 

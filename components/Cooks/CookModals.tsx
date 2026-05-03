@@ -34,7 +34,7 @@ interface ModalProps {
 function ModalShell({
   children,
   onClose,
-  width = "w-[560px]",
+  width = "max-w-[560px]",
 }: {
   children: React.ReactNode;
   onClose: () => void;
@@ -44,9 +44,10 @@ function ModalShell({
     <>
       <motion.div className="fixed inset-0 bg-black/40 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} onClick={onClose} />
       <motion.div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className={`fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] ${width} bg-white rounded-2xl shadow-2xl overflow-hidden`}
+        style={{ x: "-50%", y: "-50%" }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -60,7 +61,7 @@ function ModalShell({
 /* ─── 1. View Orders Modal ─── */
 export function ViewOrdersModal({ cookName, onClose }: ModalProps) {
   return (
-    <ModalShell onClose={onClose} width="w-[38%]">
+    <ModalShell onClose={onClose} width="max-w-[38%]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-6 border-b border-gray-100">
         <div>
@@ -214,7 +215,7 @@ export function ChangeStatusModal({ cookId, cookName, isAvailable = false, isApp
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-4">
         <div className="flex items-center gap-3">
@@ -290,7 +291,7 @@ export function AddNoteModal({ cookId, cookName, onClose }: ModalProps) {
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-1">
         <div className="flex items-center gap-3">
@@ -373,7 +374,7 @@ export function ReactivateCookModal({ cookId, cookName, onClose }: ModalProps) {
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-4">
         <div className="flex items-center gap-3">
@@ -484,7 +485,7 @@ export function SuspendCookModal({ cookId, cookName, onClose }: ModalProps) {
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[560px]">
+    <ModalShell onClose={onClose} width="max-w-[560px]">
       {/* Red header */}
       <div className="bg-red-50 px-7 py-5 flex items-center gap-4 border-b border-red-100">
         <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -629,7 +630,7 @@ export function IssueCreditModal({ cookId, cookName, onClose }: ModalProps) {
   };
 
   return (
-    <ModalShell onClose={onClose} width="w-[520px]">
+    <ModalShell onClose={onClose} width="max-w-[520px]">
       {/* Header */}
       <div className="flex items-start justify-between px-7 pt-6 pb-4">
         <div className="flex items-center gap-3">
